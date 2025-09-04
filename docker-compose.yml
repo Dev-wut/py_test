@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend_api:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+
+  scraper_runner:
+    build: ./backend
+    command: python scraper_runner.py
+    volumes:
+      - ./backend:/app
+      - ./backend/data:/app/data # Ensure data is persistent and shared with backend_api
+    depends_on:
+      - backend_api # Scraper might need the API to be up, or at least the data directory
+    restart: on-failure # Ensure scraper restarts if it crashes
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app # Mount for development, remove for production if not needed
+    depends_on:
+      - backend_api # Frontend depends on backend API
