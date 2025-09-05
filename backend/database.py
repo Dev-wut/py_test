@@ -56,6 +56,7 @@ def create_tables(cur=None):
         """
     )
 
+
 def insert_deals(deals_data):
     _ensure_database_url()
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
@@ -81,9 +82,7 @@ def insert_deals(deals_data):
                         (merchant_name,),
                     )
                     merchant_id_result = cur.fetchone()
-                    merchant_id = (
-                        merchant_id_result[0] if merchant_id_result else None
-                    )
+                    merchant_id = merchant_id_result[0] if merchant_id_result else None
                 else:
                     merchant_id = None
 
@@ -161,6 +160,7 @@ def get_all_merchants():
         merchants = [row[0] for row in cur.fetchall()]
     return merchants
 
+
 def get_deals_from_db(
     page: int = 1, page_size: int = 50, merchant: str = None, title: str = None
 ):
@@ -186,7 +186,7 @@ def get_deals_from_db(
         total_products = cur.fetchone()[0]
 
         select_query = """
-            SELECT d.*, m.name as merchant_name
+            SELECT d.*, COALESCE(m.name, '') AS merchant
             FROM deals d
             LEFT JOIN merchants m ON d.merchant_id = m.id
         """
@@ -222,6 +222,9 @@ def get_deals_from_db(
     ]
 
     deals_list = [dict(zip(columns, deal)) for deal in deals]
+    for deal in deals_list:
+        merchant_value = deal.get("merchant")
+        deal["merchant"] = str(merchant_value) if merchant_value is not None else ""
 
     return {
         "total_products": total_products,
