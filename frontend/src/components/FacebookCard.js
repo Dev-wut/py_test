@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
-import { Row, Col, Button, Tag, Typography, Space } from 'antd';
+import { Row, Col, Button, Tag, Typography, Space, message } from 'antd';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { DownloadOutlined, FacebookOutlined, ShoppingCartOutlined, StarFilled } from '@ant-design/icons';
+import { DownloadOutlined, FacebookOutlined, ShoppingCartOutlined, StarFilled, CopyOutlined } from '@ant-design/icons';
 import { getStoreColor } from '../config/storeColors';
 
 const { Title, Text } = Typography;
@@ -10,12 +10,21 @@ const FacebookCard = ({ product, onDownload, calculateSavings }) => {
   const cardRef = useRef(null);
   return (
     <div style={{ position: 'relative' }}>
-      <Button
-        className="download-button"
-        icon={<DownloadOutlined />}
-        onClick={() => onDownload(cardRef)}
-        style={{ position: 'absolute', top: '24px', right: '-50px', zIndex: 2 }}
-      />
+      <div style={{ position: 'absolute', top: '24px', right: '24px', display: 'flex', gap: '8px', zIndex: 2 }}>
+        <Button
+          className="action-button copy-button"
+          icon={<CopyOutlined />}
+          onClick={() => {
+            navigator.clipboard.writeText(product.title);
+            message.success('Copied title');
+          }}
+        />
+        <Button
+          className="action-button download-button"
+          icon={<DownloadOutlined />}
+          onClick={() => onDownload(cardRef)}
+        />
+      </div>
       <div ref={cardRef} style={{ width: '1200px', height: '630px', background: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', overflow: 'hidden', border: '1px solid #e8e8e8' }}>
         <Row style={{ height: '100%' }}>
           <Col span={12} style={{ position: 'relative', background: '#fafafa' }}>

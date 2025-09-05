@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
-import { Card, Tag, Typography, Button } from 'antd';
+import { Card, Tag, Typography, Button, message } from 'antd';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { DownloadOutlined, StarFilled } from '@ant-design/icons';
+import { DownloadOutlined, StarFilled, CopyOutlined } from '@ant-design/icons';
 import { getStoreColor } from '../config/storeColors';
 
 const { Paragraph, Title, Text } = Typography;
@@ -10,12 +10,23 @@ const GridCard = ({ product, onDownload, calculateSavings }) => {
   const cardRef = useRef(null);
   return (
     <div style={{ position: 'relative', height: '100%' }}>
-      <Button
-        className="download-button"
-        icon={<DownloadOutlined />}
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDownload(cardRef); }}
-        style={{ position: 'absolute', top: '12px', right: '-40px', zIndex: 2 }}
-      />
+      <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '8px', zIndex: 2 }}>
+        <Button
+          className="action-button copy-button"
+          icon={<CopyOutlined />}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            navigator.clipboard.writeText(product.title);
+            message.success('Copied title');
+          }}
+        />
+        <Button
+          className="action-button download-button"
+          icon={<DownloadOutlined />}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDownload(cardRef); }}
+        />
+      </div>
       <div ref={cardRef} style={{ height: '100%' }}>
         <a href={product.product_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', height: '100%', display: 'block' }}>
           <Card
@@ -31,7 +42,7 @@ const GridCard = ({ product, onDownload, calculateSavings }) => {
                 </Tag>
                 <Tag
                   color="#f5222d"
-                  style={{ position: 'absolute', top: '12px', right: '12px', borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold', zIndex: 1 }}
+                  style={{ position: 'absolute', top: '12px', right: '48px', borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold', zIndex: 1 }}
                 >
                   {product.discount}
                 </Tag>
