@@ -1,6 +1,8 @@
 import logging
 import os
 import json
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import List, Optional
 from copy import deepcopy
 
@@ -73,6 +75,13 @@ def scrape_and_save(allowed_merchants: Optional[List[str]] = None):
     )
     # Ensure the data directory exists
     os.makedirs(DATA_DIR, exist_ok=True)
+
+    with open(LATEST_DEALS_FILE, "w", encoding="utf-8") as f:
+        json.dump({
+            "timestamp": datetime.now(ZoneInfo("Asia/Bangkok")).isoformat(),
+            "total_products": 0,
+            "products": []
+        }, f, ensure_ascii=False, indent=2)
 
     config = load_scraper_config() # Load config here
     scraper = PriceZAScraper(config=config, allowed_merchants=allowed_merchants)
