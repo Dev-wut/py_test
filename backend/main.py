@@ -35,12 +35,13 @@ app = FastAPI(
 )
 
 # --- CORS Middleware ---
-# Allow requests from typical frontend development servers
-origins = [
-    "http://localhost",
-    "http://localhost:3000",  # Default for React
-    "http://localhost:5173",  # Default for Vite + React
-]
+# Allow requests based on the ALLOWED_ORIGINS environment variable.
+# Fallback to allow all origins when the variable is not provided.
+origins_env = os.getenv("ALLOWED_ORIGINS")
+if origins_env:
+    origins = [origin.strip() for origin in origins_env.split(",") if origin.strip()]
+else:
+    origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
