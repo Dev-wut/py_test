@@ -62,6 +62,8 @@ def insert_deals(deals_data):
     _ensure_database_url()
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
         create_tables(cur)
+        # Clear existing deals while keeping merchants intact
+        cur.execute("TRUNCATE TABLE deals RESTART IDENTITY CASCADE;")
 
         for deal in deals_data["products"]:
             try:
