@@ -50,8 +50,8 @@ def create_tables(cur=None):
             merchant_image TEXT,
             rating TEXT,
             reviews_count TEXT,
-            scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            scraped_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok'),
+            updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok'),
             duplicate_count INTEGER DEFAULT 0,
             UNIQUE (title, original_price, merchant_id)
         );
@@ -111,7 +111,7 @@ def insert_deals(deals_data):
                         merchant_image = EXCLUDED.merchant_image,
                         rating = EXCLUDED.rating,
                         reviews_count = EXCLUDED.reviews_count,
-                        updated_at = CURRENT_TIMESTAMP,
+                        updated_at = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok'),
                         duplicate_count = deals.duplicate_count + 1
                     RETURNING title, price, original_price, discount, image_url, product_url, merchant_id, merchant_image, rating, reviews_count;
                     """,

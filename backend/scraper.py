@@ -8,6 +8,7 @@ PriceZA Hot Deals Scraper
 import json
 import csv
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import time
 import logging
 from urllib.parse import urljoin
@@ -228,13 +229,13 @@ class PriceZAScraper:
     def save_to_json(self, filename=None):
         """ส่วนนี้เหมือนเดิม"""
         if not filename:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(ZoneInfo("Asia/Bangkok")).strftime("%Y%m%d_%H%M%S")
             filename = f"priceza_hot_deals_{timestamp}.json"
         
         try:
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump({
-                    'timestamp': datetime.now().isoformat(),
+                    'timestamp': datetime.now(ZoneInfo("Asia/Bangkok")).isoformat(),
                     'total_products': len(self.hot_deals),
                     'products': self.hot_deals
                 }, f, ensure_ascii=False, indent=2)
@@ -242,7 +243,7 @@ class PriceZAScraper:
             try:
                 logging.info("กำลังเพิ่มข้อมูลลงในฐานข้อมูล...")
                 deals_data = {
-                    'timestamp': datetime.now().isoformat(),
+                    'timestamp': datetime.now(ZoneInfo("Asia/Bangkok")).isoformat(),
                     'total_products': len(self.hot_deals),
                     'products': self.hot_deals
                 }
@@ -258,7 +259,7 @@ class PriceZAScraper:
     def save_to_csv(self, filename=None):
         """ส่วนนี้เหมือนเดิม"""
         if not filename:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(ZoneInfo("Asia/Bangkok")).strftime("%Y%m%d_%H%M%S")
             filename = f"priceza_hot_deals_{timestamp}.csv"
         
         if not self.hot_deals:
