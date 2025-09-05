@@ -42,17 +42,21 @@ def startup_event():
 
 # --- CORS Middleware ---
 # Allow requests based on the ALLOWED_ORIGINS environment variable.
-# Fallback to allow all origins when the variable is not provided.
+# Use a safe default and warn if the variable is not provided.
 origins_env = os.getenv("ALLOWED_ORIGINS")
 if origins_env:
     origins = [origin.strip() for origin in origins_env.split(",") if origin.strip()]
 else:
-    origins = ["*"]
+    origins = ["http://localhost"]
+    logging.error(
+        "ALLOWED_ORIGINS not set; defaulting to ['http://localhost']. "
+        "Set ALLOWED_ORIGINS environment variable in production."
+    )
 allow_credentials = True
 if origins == ["*"]:
     allow_credentials = False
     logging.warning(
-        "ALLOWED_ORIGINS not set; allowing all origins without credentials."
+        "ALLOWED_ORIGINS set to '*' – allowing all origins without credentials."
     )
 
 app.add_middleware(
