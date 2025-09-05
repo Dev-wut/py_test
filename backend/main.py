@@ -10,10 +10,10 @@ except ImportError:  # pragma: no cover
     from config import DEFAULT_SCRAPER_CONFIG
 try:
     from .utils.logging import setup_logging
-    from .database import get_deals_from_db
+    from .database import get_deals_from_db, get_all_merchants, create_tables
 except ImportError:  # pragma: no cover
     from utils.logging import setup_logging
-    from database import get_deals_from_db
+    from database import get_deals_from_db, get_all_merchants, create_tables
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +35,10 @@ app = FastAPI(
     description="An API to scrape hot deals from Priceza and view the results.",
     version="1.0.0",
 )
+
+@app.on_event("startup")
+def startup_event():
+    create_tables()
 
 # --- CORS Middleware ---
 # Allow requests based on the ALLOWED_ORIGINS environment variable.
@@ -210,16 +214,28 @@ def get_scraper_status():
     summary="Get Latest Scraped Deals",
     description="Retrieves the most recently scraped hot deals from the database with pagination.",
 )
-def get_latest_deals(page: int = 1, page_size: int = 50):
+def get_latest_deals(page: int = 1, page_size: int = 50, merchant: Optional[str] = None):
     """
     Reads the latest deals from the database with pagination.
     """
     try:
-        deals_data = get_deals_from_db(page, page_size)
+        deals_data = get_deals_from_db(page, page_size, merchant)
         return deals_data
     except Exception as e:
         logging.error(f"Could not fetch deals from database: {e}")
         return {"total_products": 0, "products": [], "page": page, "page_size": page_size}
+
+@app.get("/api/merchants", response_model=List[str], summary="Get All Merchants")
+def get_all_merchants_api():
+    """
+    Retrieves a list of all unique merchant names from the database.
+    """
+    try:
+        merchants = get_all_merchants()
+        return merchants
+    except Exception as e:
+        logging.error(f"Could not fetch merchants from database: {e}")
+        return []
 
 
 

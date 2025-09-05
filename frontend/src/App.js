@@ -21,7 +21,7 @@ import {
   message,
   Pagination
 } from 'antd';
-import { SyncOutlined, ShoppingCartOutlined, CopyOutlined, FacebookOutlined, DownloadOutlined } from '@ant-design/icons';
+import { SyncOutlined, ShoppingCartOutlined, CopyOutlined, FacebookOutlined, DownloadOutlined, StarFilled } from '@ant-design/icons';
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -51,14 +51,19 @@ const App = () => {
   const [totalProducts, setTotalProducts] = useState(0);
   const [pageSize, setPageSize] = useState(50);
 
-  const fetchData = async (page = 1) => {
+  const fetchDeals = async (page = 1, merchant = null) => {
     setLoading(true);
     setError(null);
     const current_page_size = viewMode === 'grid' ? 50 : 20;
     setPageSize(current_page_size);
 
+    let url = `/api/deals?page=${page}&page_size=${current_page_size}`;
+    if (merchant && merchant !== 'All') {
+      url += `&merchant=${merchant}`;
+    }
+
     try {
-      const response = await fetch(`/api/deals?page=${page}&page_size=${current_page_size}`);
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch deals');
       }
@@ -71,15 +76,9 @@ const App = () => {
       }
 
       const products = data.products || [];
-      const filteredProducts = products.filter(p => p.merchant !== 'UNNAMED');
-      setDeals(filteredProducts);
+      setDeals(products);
       setTotalProducts(data.total_products);
       setCurrentPage(data.page);
-
-      if (filteredProducts.length > 0) {
-        const allMerchants = ['All', ...new Set(filteredProducts.map(deal => deal.merchant))];
-        setMerchants(allMerchants);
-      }
 
     } catch (err) {
       setError('Failed to fetch deals. Is the backend server running ?');
@@ -89,12 +88,29 @@ const App = () => {
     }
   };
 
+  const fetchMerchants = async () => {
+    try {
+      const response = await fetch('/api/merchants');
+      if (!response.ok) {
+        throw new Error('Failed to fetch merchants');
+      }
+      const data = await response.json();
+      setMerchants(['All', ...data]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    fetchData(1);
-  }, [viewMode]);
+    fetchDeals(1, selectedMerchant);
+  }, [viewMode, selectedMerchant]);
+
+  useEffect(() => {
+    fetchMerchants();
+  }, []);
 
   const handlePageChange = (page) => {
-    fetchData(page);
+    fetchDeals(page, selectedMerchant);
   };
 
   const handleMerchantSelect = (merchant) => {
@@ -202,6 +218,20 @@ const App = () => {
             <Col span={12} style={{ padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
                 <Title level={2} style={{ marginBottom: '24px', lineHeight: 1.3, maxHeight: '150px', overflow: 'hidden' }}>{product.title}</Title>
+              {product.rating && parseFloat(product.rating.split('/')[0]) > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  {[...Array(5)].map((_, i) => (
+                    <StarFilled 
+                      key={i} 
+                      style={{
+                        color: i < parseFloat(product.rating.split('/')[0]) ? '#FFD700' : '#e0e0e0',
+                        fontSize: '20px'
+                      }}
+                    />
+                  ))}
+                  <Text style={{ fontSize: '18px', color: '#555' }}>{product.rating} ({product.reviews_count})</Text>
+                </div>
+              )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -274,6 +304,20 @@ const App = () => {
                 <Paragraph strong style={{ fontSize: '12px', lineHeight: '1.4', height: '50px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
                   {product.title}
                 </Paragraph>
+                {product.rating && parseFloat(product.rating.split('/')[0]) > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <StarFilled 
+                        key={i} 
+                        style={{
+                          color: i < parseFloat(product.rating.split('/')[0]) ? '#FFD700' : '#e0e0e0',
+                          fontSize: '14px'
+                        }}
+                      />
+                    ))}
+                    <Text style={{ fontSize: '12px', color: '#555' }}>{product.rating} ({product.reviews_count})</Text>
+                  </div>
+                )}
                 
                 <div style={{ margin: '12px 0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -311,18 +355,14 @@ const App = () => {
       return <Alert message="Error" description={error} type="error" showIcon />;
     }
 
-    const filteredDeals = selectedMerchant === 'All'
-      ? deals
-      : deals.filter(deal => deal.merchant === selectedMerchant);
-
-    if (filteredDeals.length === 0) {
+    if (deals.length === 0) {
         return <Empty description={`No deals found for ${selectedMerchant}.`} />
     }
 
     if (viewMode === 'facebook') {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
-          {filteredDeals.map((deal, index) => (
+          {deals.map((deal, index) => (
             <FacebookCard product={deal} key={index} />
           ))}
         </div>
@@ -331,7 +371,7 @@ const App = () => {
 
     return (
       <Row gutter={[24, 24]} align="stretch">
-        {filteredDeals.map((deal, index) => (
+        {deals.map((deal, index) => (
           <Col xs={24} sm={12} md={8} lg={6} key={`${deal.product_url}-${index}`}>
             <GridCard product={deal} />
           </Col>
@@ -363,7 +403,7 @@ const App = () => {
                             </Button>
                         </Col>
                         <Col xs={24} sm={12} md={12} lg={12} xl={12}>
-                            <Button type="primary" ghost icon={<SyncOutlined />} onClick={() => fetchData(1)} loading={loading} style={{ width: '100%' }}>
+                            <Button type="primary" ghost icon={<SyncOutlined />} onClick={() => fetchDeals(1, selectedMerchant)} loading={loading} style={{ width: '100%' }}>
                                 Refresh
                             </Button>
                         </Col>
