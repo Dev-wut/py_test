@@ -218,12 +218,17 @@ def get_scraper_status():
     summary="Get Latest Scraped Deals",
     description="Retrieves the most recently scraped hot deals from the database with pagination.",
 )
-def get_latest_deals(page: int = 1, page_size: int = 50, merchant: Optional[str] = None):
+def get_latest_deals(
+    page: int = 1,
+    page_size: int = 50,
+    merchant: Optional[str] = None,
+    title: str = None,
+):
     """
     Reads the latest deals from the database with pagination.
     """
     try:
-        deals_data = get_deals_from_db(page, page_size, merchant)
+        deals_data = get_deals_from_db(page, page_size, merchant, title)
         return deals_data
     except Exception as e:
         logging.error(f"Could not fetch deals from database: {e}")

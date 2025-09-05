@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const useDeals = (viewMode, selectedMerchant) => {
+const useDeals = (viewMode, selectedMerchant, searchTitle) => {
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,7 +10,11 @@ const useDeals = (viewMode, selectedMerchant) => {
   const [totalProducts, setTotalProducts] = useState(0);
   const [pageSize, setPageSize] = useState(50);
 
-  const fetchDeals = async (page = 1, merchant = selectedMerchant) => {
+  const fetchDeals = async (
+    page = 1,
+    merchant = selectedMerchant,
+    title = searchTitle,
+  ) => {
     setLoading(true);
     setError(null);
     const current_page_size = viewMode === 'grid' ? 50 : 20;
@@ -19,6 +23,9 @@ const useDeals = (viewMode, selectedMerchant) => {
     let url = `/api/deals?page=${page}&page_size=${current_page_size}`;
     if (merchant && merchant !== 'All') {
       url += `&merchant=${merchant}`;
+    }
+    if (title) {
+      url += `&title=${encodeURIComponent(title)}`;
     }
 
     try {
@@ -50,9 +57,9 @@ const useDeals = (viewMode, selectedMerchant) => {
   };
 
   useEffect(() => {
-    fetchDeals(1, selectedMerchant);
+    fetchDeals(1, selectedMerchant, searchTitle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode, selectedMerchant]);
+  }, [viewMode, selectedMerchant, searchTitle]);
 
   return {
     deals,
