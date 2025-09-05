@@ -10,8 +10,10 @@ except ImportError:  # pragma: no cover
     from config import DEFAULT_SCRAPER_CONFIG
 try:
     from .utils.logging import setup_logging
+    from .database import get_deals_from_db
 except ImportError:  # pragma: no cover
     from utils.logging import setup_logging
+    from database import get_deals_from_db
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -121,9 +123,10 @@ class Deal(BaseModel):
 
 class ScrapeResponse(BaseModel):
     """Defines the structure of the response for the deals endpoint."""
-    timestamp: str
     total_products: int
     products: List[Deal]
+    page: int
+    page_size: int
 
 
 # --- API Endpoints ---
@@ -205,24 +208,18 @@ def get_scraper_status():
     "/api/deals",
     response_model=ScrapeResponse,
     summary="Get Latest Scraped Deals",
-    description="Retrieves the most recently scraped hot deals from the persistent JSON file.",
+    description="Retrieves the most recently scraped hot deals from the database with pagination.",
 )
-def get_latest_deals():
+def get_latest_deals(page: int = 1, page_size: int = 50):
     """
-    Reads the latest deals from the JSON file and returns them.
-    If the file doesn't exist, it returns an empty list.
+    Reads the latest deals from the database with pagination.
     """
-    if not os.path.exists(LATEST_DEALS_FILE):
-        return {"timestamp": "", "total_products": 0, "products": []}
-
     try:
-        with open(LATEST_DEALS_FILE, "r", encoding="utf-8") as f:
-            import json
-            data = json.load(f)
-        return data
+        deals_data = get_deals_from_db(page, page_size)
+        return deals_data
     except Exception as e:
-        logging.error(f"Could not read or parse {LATEST_DEALS_FILE}: {e}")
-        return {"timestamp": "", "total_products": 0, "products": []}
+        logging.error(f"Could not fetch deals from database: {e}")
+        return {"total_products": 0, "products": [], "page": page, "page_size": page_size}
 
 
 

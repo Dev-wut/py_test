@@ -18,7 +18,8 @@ import {
   Empty,
   Space,
   Tag,
-  message
+  message,
+  Pagination
 } from 'antd';
 import { SyncOutlined, ShoppingCartOutlined, CopyOutlined, FacebookOutlined, DownloadOutlined } from '@ant-design/icons';
 
@@ -46,12 +47,18 @@ const App = () => {
   const [isScraping, setIsScraping] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [viewMode, setViewMode] = useState('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [pageSize, setPageSize] = useState(50);
 
-  const fetchData = async () => {
+  const fetchData = async (page = 1) => {
     setLoading(true);
     setError(null);
+    const current_page_size = viewMode === 'grid' ? 50 : 20;
+    setPageSize(current_page_size);
+
     try {
-      const response = await fetch('/api/deals');
+      const response = await fetch(`/api/deals?page=${page}&page_size=${current_page_size}`);
       if (!response.ok) {
         throw new Error('Failed to fetch deals');
       }
@@ -66,11 +73,8 @@ const App = () => {
       const products = data.products || [];
       const filteredProducts = products.filter(p => p.merchant !== 'UNNAMED');
       setDeals(filteredProducts);
-
-      if (data.timestamp) {
-        const formattedDate = new Date(data.timestamp).toLocaleString();
-        setLastUpdated(formattedDate);
-      }
+      setTotalProducts(data.total_products);
+      setCurrentPage(data.page);
 
       if (filteredProducts.length > 0) {
         const allMerchants = ['All', ...new Set(filteredProducts.map(deal => deal.merchant))];
@@ -86,8 +90,12 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(1);
+  }, [viewMode]);
+
+  const handlePageChange = (page) => {
+    fetchData(page);
+  };
 
   const handleMerchantSelect = (merchant) => {
     setSelectedMerchant(merchant);
@@ -343,7 +351,7 @@ const App = () => {
                 <div className="statistic-container-mobile-hide" style={{ flexGrow: 1, textAlign: 'center' }}>
                     <Statistic
                         title={<Text style={{color: '#a6adb4'}}>Deals Found</Text>}
-                        value={deals.length}
+                        value={totalProducts}
                         valueStyle={{color: '#fff'}}
                     />
                 </div>
@@ -355,7 +363,7 @@ const App = () => {
                             </Button>
                         </Col>
                         <Col xs={24} sm={12} md={12} lg={12} xl={12}>
-                            <Button type="primary" ghost icon={<SyncOutlined />} onClick={fetchData} loading={loading} style={{ width: '100%' }}>
+                            <Button type="primary" ghost icon={<SyncOutlined />} onClick={() => fetchData(1)} loading={loading} style={{ width: '100%' }}>
                                 Refresh
                             </Button>
                         </Col>
@@ -399,6 +407,15 @@ const App = () => {
             </div>
             <div className="card-list-container" style={{ padding: 24, minHeight: 308, borderRadius: '8px' }}>
               {renderContent()}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
+              <Pagination
+                current={currentPage}
+                total={totalProducts}
+                pageSize={pageSize}
+                onChange={handlePageChange}
+                showSizeChanger={false}
+              />
             </div>
           </Content>
           <Footer style={{ textAlign: 'center' }}>

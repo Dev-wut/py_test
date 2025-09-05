@@ -13,6 +13,7 @@ import logging
 from urllib.parse import urljoin
 import re
 from utils.logging import setup_logging
+from database import insert_deals
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -238,6 +239,17 @@ class PriceZAScraper:
                     'products': self.hot_deals
                 }, f, ensure_ascii=False, indent=2)
             logging.info(f"บันทึกข้อมูล JSON สำเร็จ: {filename}")
+            try:
+                logging.info("กำลังเพิ่มข้อมูลลงในฐานข้อมูล...")
+                deals_data = {
+                    'timestamp': datetime.now().isoformat(),
+                    'total_products': len(self.hot_deals),
+                    'products': self.hot_deals
+                }
+                insert_deals(deals_data)
+                logging.info("เพิ่มข้อมูลลงในฐานข้อมูลสำเร็จ")
+            except Exception as e:
+                logging.error(f"ไม่สามารถเพิ่มข้อมูลลงในฐานข้อมูล: {e}")
             return filename
         except Exception as e:
             logging.error(f"ไม่สามารถบันทึกไฟล์ JSON: {e}")

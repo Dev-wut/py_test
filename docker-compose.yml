@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: priceza_deals
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend_net
+    ports:
+      - "5432:5432"
+
   backend_api:
     build: ./backend
     ports:
@@ -9,6 +22,9 @@ services:
       - ./backend:/app
     environment:
       - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000,http://81.17.100.56:3000
+      - DATABASE_URL=postgresql://user:password@postgres/priceza_deals
+    depends_on:
+      - postgres
     networks:
       - backend_net
 
@@ -20,7 +36,10 @@ services:
       - ./backend/data:/app/data # Ensure data is persistent and shared with backend_api
     depends_on:
       - backend_api # Scraper might need the API to be up, or at least the data directory
+      - postgres
     restart: on-failure # Ensure scraper restarts if it crashes
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgres/priceza_deals
     networks:
       - backend_net
 
@@ -38,3 +57,6 @@ services:
 
 networks:
   backend_net:
+
+volumes:
+  postgres_data:
