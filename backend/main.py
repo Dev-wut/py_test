@@ -2,6 +2,9 @@
 import logging
 import os
 from typing import List, Optional
+from copy import deepcopy
+
+from config import DEFAULT_SCRAPER_CONFIG
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -129,35 +132,15 @@ def get_scraper_config():
     If the file doesn't exist, it returns a default configuration.
     """
     if not os.path.exists(SCRAPER_CONFIG_FILE):
-        # Return a default config if the file doesn't exist
-        return {
-            "base_url": "https://www.priceza.com",
-            "selectors": {
-                "load_more_button": { "class": "hotdeal-tab__load-more__btn" },
-                "hot_deals_container": { "tag": "div", "class": "pz-pdb-section", "id": "home-specials" },
-                "product_item": { "tag": "div", "class": "pz-pdb-item" },
-                "title": { "tag": "h3", "class": "pz-pdb_name" },
-                "original_price": { "tag": "del", "class": "pz-base-price" },
-                "price": { "tag": "span", "class": "pz-pdb-price" },
-                "discount": { "tag": "div", "class": "pz-label--discount" },
-                "image": { "tag": "img", "class": "pz-pdb_media--img" },
-                "merchant_image": { "tag": "img", "class": "pz-pdb_store--img" },
-                "product_link": { "tag": "a", "attrs": { "href": True, "onmousedown": True } },
-                "rating": { "tag": "div", "class": "pz-rating-score-text" }
-            },
-            "json_keys": {
-                "title": "title",
-                "price": "price",
-                "original_price": "original_price",
-                "discount": "discount",
-                "image_url": "image_url",
-                "product_url": "product_url",
-                "merchant": "merchant",
-                "merchant_image": "merchant_image",
-                "rating": "rating",
-                "reviews_count": "reviews_count"
-            }
-        }
+        # Initialize with default config if the file doesn't exist
+        try:
+            os.makedirs(DATA_DIR, exist_ok=True)
+            with open(SCRAPER_CONFIG_FILE, "w", encoding="utf-8") as f:
+                import json
+                json.dump(DEFAULT_SCRAPER_CONFIG, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logging.error(f"Failed to initialize {SCRAPER_CONFIG_FILE}: {e}")
+        return deepcopy(DEFAULT_SCRAPER_CONFIG)
 
     try:
         with open(SCRAPER_CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -167,34 +150,7 @@ def get_scraper_config():
     except Exception as e:
         logging.error(f"Could not read or parse {SCRAPER_CONFIG_FILE}: {e}")
         # Return default config on error as well
-        return {
-            "base_url": "https://www.priceza.com",
-            "selectors": {
-                "load_more_button": { "class": "hotdeal-tab__load-more__btn" },
-                "hot_deals_container": { "tag": "div", "class": "pz-pdb-section", "id": "home-specials" },
-                "product_item": { "tag": "div", "class": "pz-pdb-item" },
-                "title": { "tag": "h3", "class": "pz-pdb_name" },
-                "original_price": { "tag": "del", "class": "pz-base-price" },
-                "price": { "tag": "span", "class": "pz-pdb-price" },
-                "discount": { "tag": "div", "class": "pz-label--discount" },
-                "image": { "tag": "img", "class": "pz-pdb_media--img" },
-                "merchant_image": { "tag": "img", "class": "pz-pdb_store--img" },
-                "product_link": { "tag": "a", "attrs": { "href": True, "onmousedown": True } },
-                "rating": { "tag": "div", "class": "pz-rating-score-text" }
-            },
-            "json_keys": {
-                "title": "title",
-                "price": "price",
-                "original_price": "original_price",
-                "discount": "discount",
-                "image_url": "image_url",
-                "product_url": "product_url",
-                "merchant": "merchant",
-                "merchant_image": "merchant_image",
-                "rating": "rating",
-                "reviews_count": "reviews_count"
-            }
-        }
+        return deepcopy(DEFAULT_SCRAPER_CONFIG)
 
 @app.post(
     "/api/scraper_config",
