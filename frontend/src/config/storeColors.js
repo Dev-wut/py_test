@@ -1,0 +1,28 @@
+export const STORE_COLORS = {
+  'LAZADA': '#FF6600',
+  'SHOPEE': '#EE4D2D',
+  'TIKTOK': '#000000',
+  'TIKTOK-SEA': '#333333',
+  'B2S': '#1E90FF',
+  'CENTRAL_NEW': '#8A2BE2',
+  'SAMSUNG-AFFILIATE': '#00008B',
+  'ISTUDIO_N': '#555555',
+  'HOMEPRO': '#008000',
+  '2BESHOP': '#9932CC',
+  'REV': '#FF0000',
+  'OFM': '#4B0082',
+  'UNNAMED': '#808080',
+  'BANANA': '#FFD700',
+  'STUDIO7': '#FF69B4',
+  'NOCNOC': '#00CED1',
+  'ICC': '#3CB371',
+  'DOTLIFE': '#1E90FF',
+  'ALLONLINE_AFFILIATE': '#9370DB',
+  'CASECLUB1': '#FF4500',
+  '1577SHOP': '#FFA500',
+  'SINGHANEW': '#32CD32',
+  'MAKROPRO': '#20B2AA',
+  'PROSPACE': '#708090'
+};
+
+export const getStoreColor = (store) => STORE_COLORS[store] || '#808080';
