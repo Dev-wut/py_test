@@ -198,7 +198,7 @@ def get_deals_from_db(
         if merchant:
             select_query += " WHERE LOWER(m.name) = LOWER(%s)"
 
-        select_query += " ORDER BY d.scraped_at DESC LIMIT %s OFFSET %s"
+        select_query += " ORDER BY d.id DESC LIMIT %s OFFSET %s"
         params.extend([page_size, offset])
 
         cur.execute(select_query, tuple(params))
