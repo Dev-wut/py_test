@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Typography, message, Card, Row, Col } from 'antd';
-import axios from 'axios';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const ScraperCriteria = () => {
     const [form] = Form.useForm();
@@ -15,8 +13,11 @@ const ScraperCriteria = () => {
         const fetchConfig = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/scraper_config`);
-                const config = response.data;
+                const response = await fetch('/api/scraper_config');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch config');
+                }
+                const config = await response.json();
                 // Transform 'class' to 'class_name' for form fields
                 const transformedSelectors = {};
                 for (const key in config.selectors) {
@@ -73,7 +74,13 @@ const ScraperCriteria = () => {
                 }
             }
 
-            await axios.post(`${API_BASE_URL}/api/scraper_config`, configToSend);
+            await fetch('/api/scraper_config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(configToSend),
+            });
             message.success('Scraper configuration updated successfully!');
         } catch (error) {
             message.error('Failed to update scraper configuration.');
