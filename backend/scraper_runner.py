@@ -2,6 +2,9 @@ import logging
 import os
 import json
 from typing import List, Optional
+from copy import deepcopy
+
+from config import DEFAULT_SCRAPER_CONFIG
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -32,69 +35,23 @@ def load_scraper_config():
     """
     os.makedirs(DATA_DIR, exist_ok=True)
     if not os.path.exists(SCRAPER_CONFIG_FILE):
-        logging.warning(f"Scraper config file not found: {SCRAPER_CONFIG_FILE}. Using default values.")
-        # Return a default config if the file doesn't exist
-        return {
-            "base_url": "https://www.priceza.com",
-            "selectors": {
-                "load_more_button": { "class": "hotdeal-tab__load-more__btn" },
-                "hot_deals_container": { "tag": "div", "class": "pz-pdb-section", "id": "home-specials" },
-                "product_item": { "tag": "div", "class": "pz-pdb-item" },
-                "title": { "tag": "h3", "class": "pz-pdb_name" },
-                "original_price": { "tag": "del", "class": "pz-base-price" },
-                "price": { "tag": "span", "class": "pz-pdb-price" },
-                "discount": { "tag": "div", "class": "pz-label--discount" },
-                "image": { "tag": "img", "class": "pz-pdb_media--img" },
-                "merchant_image": { "tag": "img", "class": "pz-pdb_store--img" },
-                "product_link": { "tag": "a", "attrs": { "href": True, "onmousedown": True } },
-                "rating": { "tag": "div", "class": "pz-rating-score-text" }
-            },
-            "json_keys": {
-                "title": "title",
-                "price": "price",
-                "original_price": "original_price",
-                "discount": "discount",
-                "image_url": "image_url",
-                "product_url": "product_url",
-                "merchant": "merchant",
-                "merchant_image": "merchant_image",
-                "rating": "rating",
-                "reviews_count": "reviews_count"
-            }
-        }
+        logging.warning(
+            f"Scraper config file not found: {SCRAPER_CONFIG_FILE}. Using default values."
+        )
+        try:
+            with open(SCRAPER_CONFIG_FILE, "w", encoding="utf-8") as f:
+                json.dump(DEFAULT_SCRAPER_CONFIG, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logging.error(f"Failed to initialize {SCRAPER_CONFIG_FILE}: {e}")
+        return deepcopy(DEFAULT_SCRAPER_CONFIG)
     try:
         with open(SCRAPER_CONFIG_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        logging.error(f"Failed to load scraper config file: {e}. Using default values.")
-        return {
-            "base_url": "https://www.priceza.com",
-            "selectors": {
-                "load_more_button": { "class": "hotdeal-tab__load-more__btn" },
-                "hot_deals_container": { "tag": "div", "class": "pz-pdb-section", "id": "home-specials" },
-                "product_item": { "tag": "div", "class": "pz-pdb-item" },
-                "title": { "tag": "h3", "class": "pz-pdb_name" },
-                "original_price": { "tag": "del", "class": "pz-base-price" },
-                "price": { "tag": "span", "class": "pz-pdb-price" },
-                "discount": { "tag": "div", "class": "pz-label--discount" },
-                "image": { "tag": "img", "class": "pz-pdb_media--img" },
-                "merchant_image": { "tag": "img", "class": "pz-pdb_store--img" },
-                "product_link": { "tag": "a", "attrs": { "href": True, "onmousedown": True } },
-                "rating": { "tag": "div", "class": "pz-rating-score-text" }
-            },
-            "json_keys": {
-                "title": "title",
-                "price": "price",
-                "original_price": "original_price",
-                "discount": "discount",
-                "image_url": "image_url",
-                "product_url": "product_url",
-                "merchant": "merchant",
-                "merchant_image": "merchant_image",
-                "rating": "rating",
-                "reviews_count": "reviews_count"
-            }
-        }
+        logging.error(
+            f"Failed to load scraper config file: {e}. Using default values."
+        )
+        return deepcopy(DEFAULT_SCRAPER_CONFIG)
 
 def update_scraper_status(is_scraping: bool):
     """
