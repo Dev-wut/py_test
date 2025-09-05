@@ -63,10 +63,10 @@ const App = () => {
 
   const handleDownload = async (cardRef) => {
     if (cardRef.current) {
-      const downloadButton = cardRef.current.parentElement.querySelector('.download-button');
-      if (downloadButton) {
-        downloadButton.style.display = 'none';
-      }
+      const actionButtons = cardRef.current.parentElement.querySelectorAll('.action-button');
+      actionButtons.forEach((btn) => {
+        btn.style.display = 'none';
+      });
 
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
@@ -75,9 +75,9 @@ const App = () => {
         scale: 2,
       });
 
-      if (downloadButton) {
-        downloadButton.style.display = 'block';
-      }
+      actionButtons.forEach((btn) => {
+        btn.style.display = 'block';
+      });
 
       canvas.toBlob((blob) => {
         const url = URL.createObjectURL(blob);
