@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Card, Tag, Typography, Button, message } from 'antd';
+import { Card, Tag, Typography, Button, message, theme } from 'antd';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { DownloadOutlined, StarFilled, CopyOutlined } from '@ant-design/icons';
 import { getStoreColor } from '../config/storeColors';
@@ -8,6 +8,7 @@ const { Paragraph, Title, Text } = Typography;
 
 const GridCard = ({ product, onDownload, calculateSavings }) => {
   const cardRef = useRef(null);
+  const { token } = theme.useToken();
   return (
     <div style={{ position: 'relative', height: '100%' }}>
       <div
@@ -41,7 +42,7 @@ const GridCard = ({ product, onDownload, calculateSavings }) => {
         <a href={product.product_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', height: '100%', display: 'block' }}>
           <Card
             hoverable
-            style={{ borderRadius: '16px', overflow: 'hidden', border: '2px solid #f0f0f0', height: '100%' }}
+            style={{ overflow: 'hidden', height: '100%' }}
             cover={
               <div style={{ position: 'relative', height: '180px', background: '#f5f5f5' }}>
                 <div
@@ -62,7 +63,7 @@ const GridCard = ({ product, onDownload, calculateSavings }) => {
                     {product.merchant}
                   </Tag>
                   <Tag
-                    color="#f5222d"
+                    color={token.colorPrimary}
                     style={{ borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold' }}
                   >
                     {product.discount}
@@ -101,15 +102,27 @@ const GridCard = ({ product, onDownload, calculateSavings }) => {
               )}
               <div style={{ margin: '12px 0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Title level={5} style={{ margin: 0, color: '#f5222d' }}>฿{product.price}</Title>
-                  <Tag color="#fff1f0" style={{ color: '#f5222d', fontSize: '10px', fontWeight: 'semibold', borderRadius: '4px' }}>
+                  <Title level={5} style={{ margin: 0, color: token.colorPrimary }}>฿{product.price}</Title>
+                  <Tag
+                    color={token.colorPrimaryBg}
+                    style={{ color: token.colorPrimary, fontSize: '10px', fontWeight: 'semibold', borderRadius: '4px' }}
+                  >
                     ประหยัด ฿{calculateSavings(product.original_price, product.price)}
                   </Tag>
                 </div>
                 <Text delete type="secondary" style={{ fontSize: '12px' }}>฿{product.original_price}</Text>
               </div>
             </div>
-            <div style={{ background: 'linear-gradient(to right, #4A90E2, #9013FE)', color: 'white', padding: '8px', textAlign: 'center', borderRadius: '8px', marginTop: 'auto' }}>
+            <div
+              style={{
+                background: 'linear-gradient(to right, #4A90E2, #9013FE)',
+                color: 'white',
+                padding: '8px',
+                textAlign: 'center',
+                borderRadius: token.borderRadius,
+                marginTop: 'auto'
+              }}
+            >
               <Text style={{ color: 'white', fontSize: '12px', fontWeight: 'medium' }}>
                 โปรดีบอกต่อ Prod
               </Text>

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Row, Col, Button, Tag, Typography, Space, message } from 'antd';
+import { Row, Col, Button, Tag, Typography, Space, message, theme } from 'antd';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { DownloadOutlined, FacebookOutlined, ShoppingCartOutlined, StarFilled, CopyOutlined } from '@ant-design/icons';
 import { getStoreColor } from '../config/storeColors';
@@ -8,6 +8,7 @@ const { Title, Text } = Typography;
 
 const FacebookCard = ({ product, onDownload, calculateSavings }) => {
   const cardRef = useRef(null);
+  const { token } = theme.useToken();
   return (
     <div style={{ position: 'relative' }}>
       <div style={{ position: 'absolute', bottom: '24px', right: '24px', display: 'flex', gap: '8px', zIndex: 2 }}>
@@ -25,13 +26,26 @@ const FacebookCard = ({ product, onDownload, calculateSavings }) => {
           onClick={() => onDownload(cardRef)}
         />
       </div>
-      <div ref={cardRef} style={{ width: '1200px', height: '630px', background: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', overflow: 'hidden', border: '1px solid #e8e8e8' }}>
+      <div
+        ref={cardRef}
+        style={{
+          width: '1200px',
+          height: '630px',
+          background: 'white',
+          borderRadius: token.borderRadius * 1.5,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+          overflow: 'hidden'
+        }}
+      >
         <Row style={{ height: '100%' }}>
           <Col span={12} style={{ position: 'relative', background: '#fafafa' }}>
             <Tag color={getStoreColor(product.merchant)} style={{ position: 'absolute', top: '24px', left: '24px', padding: '8px 16px', borderRadius: '16px', fontSize: '16px', fontWeight: 'bold', zIndex: 1 }}>
               {product.merchant}
             </Tag>
-            <Tag color="#f5222d" style={{ position: 'absolute', top: '24px', right: '24px', padding: '8px 16px', borderRadius: '16px', fontSize: '16px', fontWeight: 'bold', zIndex: 1 }}>
+            <Tag
+              color={token.colorPrimary}
+              style={{ position: 'absolute', top: '24px', right: '24px', padding: '8px 16px', borderRadius: '16px', fontSize: '16px', fontWeight: 'bold', zIndex: 1 }}
+            >
               {product.discount}
             </Tag>
             <LazyLoadImage
@@ -64,11 +78,14 @@ const FacebookCard = ({ product, onDownload, calculateSavings }) => {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <Title level={1} style={{ margin: 0, color: '#f5222d' }}>฿{product.price}</Title>
+                <Title level={1} style={{ margin: 0, color: token.colorPrimary }}>฿{product.price}</Title>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <Text delete style={{ fontSize: '24px' }}>฿{product.original_price}</Text>
-                <Tag color="#fff1f0" style={{ color: '#f5222d', padding: '8px 12px', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold' }}>
+                <Tag
+                  color={token.colorPrimaryBg}
+                  style={{ color: token.colorPrimary, padding: '8px 12px', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold' }}
+                >
                   ประหยัด ฿{calculateSavings(product.original_price, product.price)}
                 </Tag>
               </div>
