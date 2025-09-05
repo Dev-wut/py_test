@@ -10,7 +10,17 @@ const GridCard = ({ product, onDownload, calculateSavings }) => {
   const cardRef = useRef(null);
   return (
     <div style={{ position: 'relative', height: '100%' }}>
-      <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '8px', zIndex: 2 }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          zIndex: 2
+        }}
+      >
         <Button
           className="action-button copy-button"
           icon={<CopyOutlined />}
@@ -42,7 +52,15 @@ const GridCard = ({ product, onDownload, calculateSavings }) => {
                 </Tag>
                 <Tag
                   color="#f5222d"
-                  style={{ position: 'absolute', top: '12px', right: '48px', borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold', zIndex: 1 }}
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '84px',
+                    borderRadius: '9999px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    zIndex: 1
+                  }}
                 >
                   {product.discount}
                 </Tag>
