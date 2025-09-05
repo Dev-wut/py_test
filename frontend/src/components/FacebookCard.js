@@ -10,7 +10,7 @@ const FacebookCard = ({ product, onDownload, calculateSavings }) => {
   const cardRef = useRef(null);
   return (
     <div style={{ position: 'relative' }}>
-      <div style={{ position: 'absolute', top: '24px', right: '24px', display: 'flex', gap: '8px', zIndex: 2 }}>
+      <div style={{ position: 'absolute', bottom: '24px', right: '24px', display: 'flex', gap: '8px', zIndex: 2 }}>
         <Button
           className="action-button copy-button"
           icon={<CopyOutlined />}
