@@ -55,7 +55,7 @@ const ScraperCriteria = () => {
                 json_keys: values.json_keys,
             };
 
-            // Parse attrs JSON string back to object
+            // Parse attrs JSON string back to object and rename class_name -> class
             for (const key in configToSend.selectors) {
                 const selector = configToSend.selectors[key];
                 if (selector.attrs && typeof selector.attrs === 'string') {
@@ -67,7 +67,12 @@ const ScraperCriteria = () => {
                         return; // Stop submission
                     }
                 }
+                if (Object.prototype.hasOwnProperty.call(selector, 'class_name')) {
+                    selector.class = selector.class_name;
+                    delete selector.class_name;
+                }
             }
+
             await axios.post(`${API_BASE_URL}/api/scraper_config`, configToSend);
             message.success('Scraper configuration updated successfully!');
         } catch (error) {

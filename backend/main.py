@@ -4,12 +4,18 @@ import os
 from typing import List, Optional
 from copy import deepcopy
 
-from config import DEFAULT_SCRAPER_CONFIG
-from utils.logging import setup_logging
+try:
+    from .config import DEFAULT_SCRAPER_CONFIG
+except ImportError:  # pragma: no cover
+    from config import DEFAULT_SCRAPER_CONFIG
+try:
+    from .utils.logging import setup_logging
+except ImportError:  # pragma: no cover
+    from utils.logging import setup_logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 # --- Configuration ---
 LOG_FILE = "priceza_scraper.log"
@@ -53,8 +59,9 @@ app.add_middleware(
 
 
 class SelectorDetail(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
     tag: Optional[str] = None
-    class_name: Optional[str] = Field(None, alias="class") # Use alias for 'class' keyword
+    class_name: Optional[str] = Field(None, alias="class")  # Use alias for 'class' keyword
     id: Optional[str] = None
     attrs: Optional[dict] = None
 
