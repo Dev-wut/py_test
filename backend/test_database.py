@@ -23,7 +23,21 @@ def test_insert_deals_commits_once_and_closes_connection():
 
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
-    mock_cursor.fetchone.return_value = (1,)
+    mock_cursor.fetchone.side_effect = [
+        (1,),
+        (
+            "Item",
+            "10",
+            "20",
+            "50%",
+            "img",
+            "url",
+            1,
+            "mi",
+            "4",
+            "100",
+        ),
+    ]
     mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
     mock_conn.__enter__.return_value = mock_conn
 

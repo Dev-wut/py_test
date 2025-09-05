@@ -89,7 +89,18 @@ def insert_deals(deals_data):
 
                 cur.execute(
                     """
-                    INSERT INTO deals (title, price, original_price, discount, image_url, product_url, merchant_id, merchant_image, rating, reviews_count)
+                    INSERT INTO deals (
+                        title,
+                        price,
+                        original_price,
+                        discount,
+                        image_url,
+                        product_url,
+                        merchant_id,
+                        merchant_image,
+                        rating,
+                        reviews_count
+                    )
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (title, original_price, merchant_id) DO UPDATE SET
                         price = EXCLUDED.price,
@@ -99,7 +110,8 @@ def insert_deals(deals_data):
                         rating = EXCLUDED.rating,
                         reviews_count = EXCLUDED.reviews_count,
                         updated_at = CURRENT_TIMESTAMP,
-                        duplicate_count = deals.duplicate_count + 1;
+                        duplicate_count = deals.duplicate_count + 1
+                    RETURNING title, price, original_price, discount, image_url, product_url, merchant_id, merchant_image, rating, reviews_count;
                     """,
                     (
                         deal.get("title"),
@@ -114,6 +126,35 @@ def insert_deals(deals_data):
                         deal.get("reviews_count"),
                     ),
                 )
+                returned_row = cur.fetchone()
+                if returned_row:
+                    db_fields = [
+                        "title",
+                        "price",
+                        "original_price",
+                        "discount",
+                        "image_url",
+                        "product_url",
+                        "merchant_id",
+                        "merchant_image",
+                        "rating",
+                        "reviews_count",
+                    ]
+                    db_deal = dict(zip(db_fields, returned_row))
+                    mismatches = {}
+                    for field in db_fields:
+                        expected_value = (
+                            merchant_id if field == "merchant_id" else deal.get(field)
+                        )
+                        if db_deal.get(field) != expected_value:
+                            mismatches[field] = {
+                                "db": db_deal.get(field),
+                                "scraped": expected_value,
+                            }
+                    if mismatches:
+                        logging.warning(
+                            f"Mismatch for deal {deal.get('title')}: {mismatches}"
+                        )
                 logging.info(
                     f"Inserting/Updating deal: {deal.get('title')}, Rating: {deal.get('rating')}, Reviews: {deal.get('reviews_count')}"
                 )
@@ -137,7 +178,7 @@ def get_deals_from_db(
         offset = (page - 1) * page_size
 
         count_query = (
-            "SELECT COUNT(*) FROM deals d JOIN merchants m ON d.merchant_id = m.id"
+            "SELECT COUNT(*) FROM deals d LEFT JOIN merchants m ON d.merchant_id = m.id"
         )
         params = []
         if merchant:
@@ -150,7 +191,7 @@ def get_deals_from_db(
         select_query = """
             SELECT d.*, m.name as merchant_name
             FROM deals d
-            JOIN merchants m ON d.merchant_id = m.id
+            LEFT JOIN merchants m ON d.merchant_id = m.id
         """
         if merchant:
             select_query += " WHERE LOWER(m.name) = LOWER(%s)"
