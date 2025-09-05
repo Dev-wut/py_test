@@ -12,6 +12,7 @@ import time
 import logging
 from urllib.parse import urljoin
 import re
+from utils.logging import setup_logging
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -21,15 +22,8 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
 
-# ตั้งค่า logging เหมือนเดิม
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('priceza_scraper.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ],
-)
+# --- Logging Setup ---
+setup_logging()
 
 class PriceZAScraper:
     def __init__(self, config: dict, allowed_merchants=None):

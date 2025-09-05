@@ -5,6 +5,7 @@ from typing import List, Optional
 from copy import deepcopy
 
 from config import DEFAULT_SCRAPER_CONFIG
+from utils.logging import setup_logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -20,14 +21,7 @@ SCRAPER_CONFIG_FILE = os.path.join(DATA_DIR, "scraper_config.json")
 SCHEDULE_MINUTES = 30
 
 # --- Logging Setup ---
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE, encoding="utf-8"),
-        logging.StreamHandler(),
-    ],
-)
+setup_logging(LOG_FILE)
 
 def load_scraper_config():
     """
