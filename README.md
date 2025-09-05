@@ -110,6 +110,7 @@ docker-compose down
 *   **การแยกส่วน:** Backend ถูกแบ่งออกเป็นสองส่วนหลัก: FastAPI UI Server และ Scraper Server ที่ทำงานแยกกัน สิ่งนี้ทำให้ UI Server ยังคงตอบสนองได้แม้ในขณะที่ Scraper กำลังทำงานอยู่
 *   **สถานะ Scraper:** Scraper จะสร้างและอัปเดตไฟล์ `backend/data/scraper_status.json` เพื่อระบุว่ากำลังทำงานอยู่หรือไม่ UI Server จะอ่านไฟล์นี้ผ่าน API Endpoint `/api/scraper_status` และ Frontend จะใช้ข้อมูลนี้เพื่อแสดงข้อความ "Scraping in progress..." ให้ผู้ใช้ทราบ
 *   **การกำหนดค่า Scraper:** Scraper ใช้ไฟล์ `backend/data/scraper_config.json` ในการกำหนดค่า URL, ตัวเลือก HTML (เช่น `tag`, `class`, `id`, `attrs`) และคีย์ JSON สำหรับข้อมูลที่ดึงมา คุณสามารถแก้ไขการกำหนดค่านี้ได้ผ่านหน้า UI `/scraper-criteria` โดยเฉพาะ `attrs` เป็น Dictionary ของแอตทริบิวต์ HTML เพิ่มเติมที่ใช้ในการระบุ Element ได้อย่างแม่นยำ (เช่น `{"href": true, "onmousedown": true}` สำหรับลิงก์)
-## Contributing
 
-Please avoid committing generated files such as backups, __pycache__ directories, log files, and scraped datasets. These are ignored via `.gitignore` and should be regenerated locally.
+## การมีส่วนร่วม
+
+โปรดหลีกเลี่ยงการคอมมิตไฟล์ที่สร้างขึ้นโดยอัตโนมัติ เช่น ไฟล์สำรอง, ไดเรกทอรี __pycache__, ไฟล์ล็อก และชุดข้อมูลที่ขูดมา ไฟล์เหล่านี้จะถูกละเว้นโดย `.gitignore` และควรสร้างขึ้นใหม่ในเครื่อง

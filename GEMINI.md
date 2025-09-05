@@ -1,109 +1,74 @@
 # PriceZA Hot Deals Scraper & Dashboard
 
-This project provides a full-stack solution for scraping hot deals from priceza.com, storing the data, and visualizing it through a modern web interface.
+This project is a full-stack solution for scraping Hot Deals from priceza.com, storing the data, and visualizing it through a modern web interface.
 
 ## Features
 
 *   **Configurable Scraper Criteria:** Allows dynamic adjustment of scraping parameters (URL, HTML selectors, JSON keys) via a dedicated UI.
-*   **Scraper Status Indicator:** The UI now displays a message when the scraper is actively running, providing real-time feedback on data collection.
 *   **Automated Web Scraping:** Scrapes hot deals from priceza.com using Selenium to handle dynamic content loading (e.g., "Load More" buttons).
-*   **Scheduled Data Collection:** Automatically runs the scraping process every 30 minutes.
-*   **RESTful API:** Exposes the scraped data via a FastAPI backend.
+*   **Scheduled Data Collection:** The scraper runs automatically every 30 minutes.
+*   **RESTful API:** Exposes the scraped data via a backend built with FastAPI.
 *   **Modern User Interface:** A responsive and interactive dashboard built with React and Ant Design.
+*   **Scraper Status Indicator:** The UI displays a message when the scraper is actively running, providing real-time feedback on data collection.
 *   **Structured Data Output:** Scraped data is saved in JSON format.
 
-## Project Structure
+## Installation
 
-The project is organized into two main directories:
+To get this project running, follow these steps:
 
-*   `backend/`: Contains the Python-based scraping logic and FastAPI server.
-*   `frontend/`: Contains the React-based user interface.
+1.  **Backend Setup:**
+    Navigate to the `backend` directory and install the required Python packages:
+    ```bash
+    cd backend
+    pip install fastapi uvicorn selenium beautifulsoup4 webdriver-manager python-multipart apscheduler
+    ```
 
-## Technologies Used
-
-### Backend
-*   **Python:** Core programming language.
-*   **FastAPI:** High-performance web framework for building the API, including endpoints for scraper configuration and status.
-*   **Pydantic:** Used for data validation and settings management, especially for defining the flexible scraper configuration models.
-*   **Selenium:** Web browser automation for dynamic content scraping.
-*   **BeautifulSoup4:** HTML parsing library.
-*   **APScheduler:** For scheduling the scraping tasks.
-*   **WebDriver Manager:** Automatically manages browser drivers for Selenium.
-
-### Frontend
-*   **React:** JavaScript library for building user interfaces.
-*   **Ant Design:** A comprehensive UI component library for React.
-*   **Axios:** Promise-based HTTP client for making API requests.
-
-## Setup and Installation
-
-To get the project up and running, follow these steps:
-
-### 1. Clone the Repository (if applicable)
-If this project is in a Git repository, clone it to your local machine:
-```bash
-# git clone <repository_url>
-# cd <project_directory>
-```
-
-### 2. Backend Setup
-
-Navigate to the `backend` directory and install the required Python packages:
-
-```bash
-cd backend
-pip install fastapi uvicorn selenium beautifulsoup4 webdriver-manager python-multipart
-```
-
-### 3. Frontend Setup
-
-Navigate to the `frontend` directory and install the Node.js packages:
-
-```bash
-cd frontend
-npm install
-```
+2.  **Frontend Setup:**
+    Navigate to the `frontend` directory and install the required Node.js packages:
+    ```bash
+    cd frontend
+    npm install
+    ```
 
 ## How to Run
 
-You need to run the FastAPI UI server, the scraper, and the frontend development server concurrently.
+You need to run the FastAPI UI Server, the Scraper, and the Frontend Development Server concurrently in separate terminals:
 
 ### 1. Run the FastAPI UI Server
 
-Open your first terminal, navigate to the `backend` directory, and start the FastAPI server:
+Open your first terminal, navigate to the `backend` directory, and start the FastAPI Server:
 
 ```bash
 cd backend
 uvicorn main:app --reload
 ```
-*   The server will start at `http://localhost:8000`.
-*   You can view the API documentation at `http://localhost:8000/docs`.
+*   The server will start at `http://localhost:8000`
+*   You can view the API documentation at `http://localhost:8000/docs`
 
 ### 2. Run the Scraper
 
-Open your second terminal, navigate to the `backend` directory, and start the scraper:
+Open your second terminal, navigate to the `backend` directory, and start the Scraper:
 
 ```bash
 cd backend
 python scraper_runner.py
 ```
-*   An initial data scrape will run automatically, and subsequent scrapes will occur every 30 minutes.
-*   This process will run in the background and continuously update `backend/data/latest_deals.json`.
+*   An initial data scrape will run immediately, and subsequent scrapes will occur every 30 minutes.
+*   This process will run in the background and continuously update the `backend/data/latest_deals.json` file.
 
 ### 3. Run the Frontend Development Server
 
-Open your third terminal, navigate to the `frontend` directory, and start the React development server:
+Open your third terminal, navigate to the `frontend` directory, and start the React Development Server:
 
 ```bash
 cd frontend
 npm start
 ```
-*   The React application will open in your browser, usually at `http://localhost:3000`.
 *   The UI will automatically refresh when you make changes to the frontend code.
 
 ## Running with Docker
 
-This project can be easily run using Docker and Docker Compose. This is the recommended way to get all services (backend API, scraper, and frontend) running together.
+This project can be easily run using Docker and Docker Compose. This is the recommended way to get all services (Backend API, Scraper, and Frontend) running together.
 
 ### Prerequisites
 
@@ -118,19 +83,19 @@ docker-compose up --build
 ```
 
 This command will:
-*   Build the Docker images for the backend and frontend services.
+*   Build the Docker images for the Backend and Frontend services.
 *   Start the `backend_api` (FastAPI server), `scraper_runner` (Python scraper), and `frontend` (React application served by Nginx) services.
 *   The `scraper_runner` will automatically start scraping data and update the `backend/data/latest_deals.json` file.
 
 ### Accessing the Application
 
-Once all services are up and running:
-*   **Backend API:** Access the FastAPI documentation at `http://localhost:8000/docs`.
-*   **Frontend Dashboard:** Access the React application at `http://localhost:3000`.
+Once all services are running:
+*   **Backend API:** Access the FastAPI documentation at `http://localhost:8000/docs`
+*   **Frontend Dashboard:** Access the React application at `http://localhost:3000`
 
 ### Stopping the Application
 
-To stop all running Docker containers and remove the networks created by Docker Compose, run the following command from the project root directory:
+To stop all running Docker containers and remove the networks created by Docker Compose, run the following command from the project's root directory:
 
 ```bash
 docker-compose down
@@ -138,12 +103,14 @@ docker-compose down
 
 ### Data Persistence
 
-The `backend/data` directory is mounted as a volume in the `scraper_runner` service. This ensures that the scraped data (`latest_deals.json` and `scraper_status.json`) persists on your host machine even if the Docker containers are removed.
+The `backend/data` directory is mounted as a Volume in the `scraper_runner` service. This ensures that the scraped data (`latest_deals.json` and `scraper_status.json`) persists on your host machine even if the Docker containers are removed.
 
-## Usage
+## Things to know
 
-Once all three components are running:
-*   The React dashboard will display the latest hot deals scraped from PriceZA.
-*   The scraper will automatically update the data every 30 minutes in the background, and the frontend will reflect these changes when you refresh the page or click the "Refresh" button.
-*   The UI server will remain responsive even when the scraper is actively running.
-*   The frontend will display a "Scraping in progress..." message when the scraper is running.
+*   **Separation of Concerns:** The backend is divided into two main parts: the FastAPI UI Server and the Scraper Server, which run separately. This ensures that the UI Server remains responsive even while the Scraper is running.
+*   **Scraper Status:** The scraper creates and updates the `backend/data/scraper_status.json` file to indicate whether it is currently running. The UI Server reads this file via the `/api/scraper_status` API endpoint, and the Frontend uses this information to display a "Scraping in progress..." message to the user.
+*   **Scraper Configuration:** The scraper uses the `backend/data/scraper_config.json` file to configure the URL, HTML selectors (e.g., `tag`, `class`, `id`, `attrs`), and JSON keys for the scraped data. You can edit this configuration through the `/scraper-criteria` UI page. `attrs` is a dictionary of additional HTML attributes used to precisely identify elements (e.g., `{"href": true, "onmousedown": true}` for a link).
+
+## Contributing
+
+Please avoid committing generated files such as backups, __pycache__ directories, log files, and scraped datasets. These are ignored via `.gitignore` and should be regenerated locally.
