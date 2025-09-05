@@ -28,7 +28,7 @@ const AppLogo = () => (
     <div className="logo-container" style={{ display: 'flex', alignItems: 'center', color: 'white' }}>
         <ShoppingCartOutlined style={{ fontSize: '32px' }} />
         <Title level={3} style={{ color: 'white', margin: '0 0 0 12px', whiteSpace: 'nowrap' }}>
-            PriceZA Deals
+            PriceZA Deals Za
         </Title>
     </div>
 );
@@ -118,30 +118,28 @@ const App = () => {
               <div className="custom-ribbon">{deal.discount}</div>
               <a href={deal.product_url} target="_blank" rel="noopener noreferrer" className="card-link" style={{ textDecoration: 'none', width: '100%', height: '100%', borderRadius: '8px' }}>
                 <Card
-                    style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                    style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}
                     bodyStyle={{ flexGrow: 1, display: 'flex', flexDirection: 'column', padding: '16px'}}
                     cover={<img alt={deal.title} src={deal.image_url} style={{ height: 180, objectFit: 'contain', padding: '16px' }} />}
                 >
+                    <Button 
+                        type="dashed" 
+                        size="small" 
+                        icon={<CopyOutlined />} 
+                        onClick={(e) => {
+                            e.preventDefault(); // Prevent navigating to product URL
+                            navigator.clipboard.writeText(deal.title)
+                                .then(() => messageApi.success('Title copied!'))
+                                .catch(() => messageApi.error('Failed to copy title.'));
+                        }}
+                        style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1 }}
+                    />
                     <div className="merchant-image-container" style={{ textAlign: 'center', background: '#fafafa', padding: '8px 0', borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0', marginBottom: '1rem' }}>
                         <img src={deal.merchant_image} alt={deal.merchant} style={{height: '24px', maxWidth: '80px', objectFit: 'contain'}}/>
                     </div>
                     {/* This inner div is the key to making content fill the card height */}
                     <div className="card-content-container" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                         <Paragraph style={{ marginBottom: '1rem' }} strong>{deal.title}</Paragraph>
-                        <Button 
-                            type="dashed" 
-                            size="small" 
-                            icon={<CopyOutlined />} 
-                            onClick={(e) => {
-                                e.preventDefault(); // Prevent navigating to product URL
-                                navigator.clipboard.writeText(deal.title)
-                                    .then(() => messageApi.success('Title copied!'))
-                                    .catch(() => messageApi.error('Failed to copy title.'));
-                            }}
-                            style={{ marginBottom: '1rem' }}
-                        >
-                            Copy Title
-                        </Button>
                         <div className="price-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                             <div>
                                 <Text delete type="secondary">฿{deal.original_price}</Text>
