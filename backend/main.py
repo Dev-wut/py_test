@@ -42,11 +42,17 @@ if origins_env:
     origins = [origin.strip() for origin in origins_env.split(",") if origin.strip()]
 else:
     origins = ["*"]
+allow_credentials = True
+if origins == ["*"]:
+    allow_credentials = False
+    logging.warning(
+        "ALLOWED_ORIGINS not set; allowing all origins without credentials."
+    )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
