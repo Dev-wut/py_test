@@ -22,6 +22,7 @@ import FacebookCard from './components/FacebookCard';
 import PaginationControls from './components/PaginationControls';
 import useDeals from './hooks/useDeals';
 import useMerchants from './hooks/useMerchants';
+import styles from './App.module.css';
 
 const { Content, Footer } = Layout;
 const { Text } = Typography;
@@ -95,7 +96,7 @@ const App = () => {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="loading-spinner-container" style={{ textAlign: 'center', padding: '50px' }}>
+        <div className={styles.loadingSpinnerContainer}>
           <Spin size="large" tip="Loading Deals..." />
         </div>
       );
@@ -111,7 +112,7 @@ const App = () => {
 
     if (viewMode === 'facebook') {
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
+        <div className={styles.facebookContainer}>
           {deals.map((deal, index) => (
             <FacebookCard
               product={deal}
@@ -144,23 +145,23 @@ const App = () => {
       <Route
         path="/"
         element={
-          <Layout style={{ minHeight: '100vh' }}>
+          <Layout className={styles.layout}>
             {contextHolder}
             <AppHeader
               totalProducts={totalProducts}
               loading={loading}
               onRefresh={() => fetchDeals(1, selectedMerchant)}
             />
-            <Content style={{ padding: '24px' }}>
+            <Content className={styles.content}>
               {lastUpdated && (
-                <Text type="secondary" style={{ textAlign: 'center', display: 'block', marginBottom: '1rem' }}>
+                <Text type="secondary" className={styles.lastUpdated}>
                   Last Updated: {lastUpdated}
                 </Text>
               )}
               {isScraping && (
-                <Alert message="Scraping in progress..." type="info" showIcon style={{ marginBottom: '1rem' }} />
+                <Alert message="Scraping in progress..." type="info" showIcon className={styles.scrapingAlert} />
               )}
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+              <div className={styles.viewModeContainer}>
                 <Space>
                   <Button
                     type={viewMode === 'facebook' ? 'primary' : 'default'}
@@ -176,15 +177,7 @@ const App = () => {
                   </Button>
                 </Space>
               </div>
-              <div
-                style={{
-                  background: '#fff',
-                  padding: '16px',
-                  borderRadius: '8px',
-                  marginBottom: '24px',
-                  textAlign: 'center',
-                }}
-              >
+              <div className={styles.filterContainer}>
                 <Text strong>Filter by Merchant:</Text>
                 <Space size={[0, 8]} wrap>
                   {merchants.map((merchant) => (
@@ -192,14 +185,16 @@ const App = () => {
                       key={merchant}
                       checked={selectedMerchant === merchant}
                       onChange={() => handleMerchantSelect(merchant)}
-                      style={{ fontSize: '14px', padding: '6px 12px', margin: '4px' }}
+                      className={`${styles.tag} ${
+                        selectedMerchant === merchant ? styles.tagChecked : ''
+                      }`}
                     >
                       {merchant}
                     </Tag.CheckableTag>
                   ))}
                 </Space>
               </div>
-              <div className="card-list-container" style={{ padding: 24, minHeight: 308, borderRadius: '8px' }}>
+              <div className={styles.cardListContainer}>
                 {renderContent()}
               </div>
               <PaginationControls
@@ -209,7 +204,7 @@ const App = () => {
                 onPageChange={handlePageChange}
               />
             </Content>
-            <Footer style={{ textAlign: 'center' }}>
+            <Footer className={styles.footer}>
               PriceZA Scraper ©2025 Created with Gemini
             </Footer>
           </Layout>
