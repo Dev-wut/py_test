@@ -23,7 +23,8 @@ import { SyncOutlined, ShoppingCartOutlined, CopyOutlined } from '@ant-design/ic
 const { Header, Content, Footer } = Layout;
 const { Title, Text, Paragraph } = Typography;
 
-const API_URL = 'http://localhost:8000/api/deals';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = `${API_BASE_URL}/api/deals`;
 
 // Custom Logo Component
 const AppLogo = () => (
@@ -50,7 +51,7 @@ const App = () => {
     setError(null);
     try {
       const response = await axios.get(API_URL);
-      const statusResponse = await axios.get('http://localhost:8000/api/scraper_status');
+      const statusResponse = await axios.get(`${API_BASE_URL}/api/scraper_status`);
       setIsScraping(statusResponse.data.is_scraping);
       const products = response.data.products || [];
       setDeals(products);
