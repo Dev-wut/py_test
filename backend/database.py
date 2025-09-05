@@ -238,8 +238,7 @@ def get_deals_from_db(
 
     deals_list = [dict(zip(columns, deal)) for deal in deals]
     for deal in deals_list:
-        merchant_value = deal.get("merchant")
-        deal["merchant"] = str(merchant_value) if merchant_value is not None else ""
+        deal["merchant"] = str(deal.get("merchant") or "")
 
     return {
         "total_products": total_products,

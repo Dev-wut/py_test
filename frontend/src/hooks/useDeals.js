@@ -34,6 +34,7 @@ const useDeals = (viewMode, selectedMerchant, searchTitle) => {
         throw new Error('Failed to fetch deals');
       }
       const data = await response.json();
+      console.log('Deals API response', data);
 
       const statusResponse = await fetch('/api/scraper_status');
       if (statusResponse.ok) {
