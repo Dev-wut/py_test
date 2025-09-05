@@ -51,9 +51,7 @@ def create_tables(cur=None):
             rating TEXT,
             reviews_count TEXT,
             scraped_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok'),
-            updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok'),
-            duplicate_count INTEGER DEFAULT 0,
-            UNIQUE (title, original_price, merchant_id)
+            updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok')
         );
         """
     )
@@ -104,15 +102,6 @@ def insert_deals(deals_data):
                         reviews_count
                     )
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (title, original_price, merchant_id) DO UPDATE SET
-                        price = EXCLUDED.price,
-                        discount = EXCLUDED.discount,
-                        image_url = EXCLUDED.image_url,
-                        merchant_image = EXCLUDED.merchant_image,
-                        rating = EXCLUDED.rating,
-                        reviews_count = EXCLUDED.reviews_count,
-                        updated_at = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok'),
-                        duplicate_count = deals.duplicate_count + 1
                     RETURNING title, price, original_price, discount, image_url, product_url, merchant_id, merchant_image, rating, reviews_count;
                     """,
                     (
@@ -158,7 +147,7 @@ def insert_deals(deals_data):
                             f"Mismatch for deal {deal.get('title')}: {mismatches}"
                         )
                 logging.info(
-                    f"Inserting/Updating deal: {deal.get('title')}, Rating: {deal.get('rating')}, Reviews: {deal.get('reviews_count')}"
+                    f"Inserting deal: {deal.get('title')}, Rating: {deal.get('rating')}, Reviews: {deal.get('reviews_count')}"
                 )
             except Exception as e:
                 logging.error(f"Error inserting deal: {e}")
@@ -229,7 +218,6 @@ def get_deals_from_db(
         "reviews_count",
         "scraped_at",
         "updated_at",
-        "duplicate_count",
         "merchant",
     ]
 
