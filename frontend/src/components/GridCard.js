@@ -44,26 +44,30 @@ const GridCard = ({ product, onDownload, calculateSavings }) => {
             style={{ borderRadius: '16px', overflow: 'hidden', border: '2px solid #f0f0f0', height: '100%' }}
             cover={
               <div style={{ position: 'relative', height: '180px', background: '#f5f5f5' }}>
-                <Tag
-                  color={getStoreColor(product.merchant)}
-                  style={{ position: 'absolute', top: '12px', left: '12px', borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold', zIndex: 1 }}
-                >
-                  {product.merchant}
-                </Tag>
-                <Tag
-                  color="#f5222d"
+                <div
                   style={{
                     position: 'absolute',
                     top: '12px',
-                    right: '84px',
-                    borderRadius: '9999px',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
+                    left: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
                     zIndex: 1
                   }}
                 >
-                  {product.discount}
-                </Tag>
+                  <Tag
+                    color={getStoreColor(product.merchant)}
+                    style={{ borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold' }}
+                  >
+                    {product.merchant}
+                  </Tag>
+                  <Tag
+                    color="#f5222d"
+                    style={{ borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold' }}
+                  >
+                    {product.discount}
+                  </Tag>
+                </div>
                 <LazyLoadImage
                   alt={product.title}
                   effect="blur"
