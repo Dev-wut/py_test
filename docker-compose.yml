@@ -26,5 +26,7 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app # Mount for development, remove for production if not needed
+    environment:
+      - REACT_APP_API_BASE_URL=http://81.17.100.56:8000
     depends_on:
       - backend_api # Frontend depends on backend API
