@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import 'antd/dist/reset.css';
 import { Routes, Route } from 'react-router-dom';
 import ScraperCriteria from './ScraperCriteria';
@@ -23,8 +22,6 @@ import { SyncOutlined, ShoppingCartOutlined, CopyOutlined } from '@ant-design/ic
 const { Header, Content, Footer } = Layout;
 const { Title, Text, Paragraph } = Typography;
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const API_URL = `${API_BASE_URL}/api/deals`;
 
 // Custom Logo Component
 const AppLogo = () => (
@@ -50,14 +47,23 @@ const App = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(API_URL);
-      const statusResponse = await axios.get(`${API_BASE_URL}/api/scraper_status`);
-      setIsScraping(statusResponse.data.is_scraping);
-      const products = response.data.products || [];
+      const response = await fetch('/api/deals');
+      if (!response.ok) {
+        throw new Error('Failed to fetch deals');
+      }
+      const data = await response.json();
+
+      const statusResponse = await fetch('/api/scraper_status');
+      if (statusResponse.ok) {
+        const statusData = await statusResponse.json();
+        setIsScraping(statusData.is_scraping);
+      }
+
+      const products = data.products || [];
       setDeals(products);
 
-      if (response.data.timestamp) {
-        const formattedDate = new Date(response.data.timestamp).toLocaleString();
+      if (data.timestamp) {
+        const formattedDate = new Date(data.timestamp).toLocaleString();
         setLastUpdated(formattedDate);
       }
 
