@@ -56,12 +56,14 @@ const GridCard = ({ product, onDownload, calculateSavings }) => {
                     zIndex: 1
                   }}
                 >
-                  <Tag
-                    color={getStoreColor(product.merchant)}
-                    style={{ borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold' }}
-                  >
-                    {product.merchant}
-                  </Tag>
+                    {product.merchant ? (
+                      <Tag
+                        color={getStoreColor(product.merchant)}
+                        style={{ borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold' }}
+                      >
+                        {product.merchant}
+                      </Tag>
+                    ) : null}
                   <Tag
                     color={token.colorPrimary}
                     style={{ borderRadius: '9999px', fontSize: '10px', fontWeight: 'bold' }}
