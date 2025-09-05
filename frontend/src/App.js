@@ -14,7 +14,8 @@ import {
   Empty,
   Space,
   Tag,
-  message
+  message,
+  Input,
 } from 'antd';
 import AppHeader from './components/AppHeader';
 import GridCard from './components/GridCard';
@@ -31,6 +32,7 @@ const App = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [viewMode, setViewMode] = useState('grid');
   const [selectedMerchant, setSelectedMerchant] = useState('All');
+  const [searchTitle, setSearchTitle] = useState('');
 
   const {
     deals,
@@ -42,12 +44,12 @@ const App = () => {
     totalProducts,
     pageSize,
     fetchDeals,
-  } = useDeals(viewMode, selectedMerchant);
+  } = useDeals(viewMode, selectedMerchant, searchTitle);
 
   const { merchants } = useMerchants();
 
   const handlePageChange = (page) => {
-    fetchDeals(page, selectedMerchant);
+    fetchDeals(page, selectedMerchant, searchTitle);
   };
 
   const handleMerchantSelect = (merchant) => {
@@ -150,7 +152,7 @@ const App = () => {
             <AppHeader
               totalProducts={totalProducts}
               loading={loading}
-              onRefresh={() => fetchDeals(1, selectedMerchant)}
+              onRefresh={() => fetchDeals(1, selectedMerchant, searchTitle)}
             />
             <Content className={styles.content}>
               {lastUpdated && (
@@ -176,6 +178,13 @@ const App = () => {
                     การ์ดแบบปกติ
                   </Button>
                 </Space>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <Input
+                  placeholder="Search by title"
+                  value={searchTitle}
+                  onChange={(e) => setSearchTitle(e.target.value)}
+                />
               </div>
               <div className={styles.filterContainer}>
                 <Text strong>Filter by Merchant:</Text>

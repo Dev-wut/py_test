@@ -173,7 +173,7 @@ def get_all_merchants():
     return merchants
 
 def get_deals_from_db(
-    page: int = 1, page_size: int = 50, merchant: str = None
+    page: int = 1, page_size: int = 50, merchant: str = None, title: str = None
 ):
     _ensure_database_url()
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
@@ -186,6 +186,12 @@ def get_deals_from_db(
         if merchant:
             count_query += " WHERE LOWER(m.name) = LOWER(%s)"
             params.append(merchant)
+        if title:
+            if "WHERE" in count_query:
+                count_query += " AND LOWER(d.title) LIKE LOWER(%s)"
+            else:
+                count_query += " WHERE LOWER(d.title) LIKE LOWER(%s)"
+            params.append(f"%{title}%")
 
         cur.execute(count_query, tuple(params))
         total_products = cur.fetchone()[0]
@@ -197,6 +203,11 @@ def get_deals_from_db(
         """
         if merchant:
             select_query += " WHERE LOWER(m.name) = LOWER(%s)"
+        if title:
+            if "WHERE" in select_query:
+                select_query += " AND LOWER(d.title) LIKE LOWER(%s)"
+            else:
+                select_query += " WHERE LOWER(d.title) LIKE LOWER(%s)"
 
         select_query += " ORDER BY d.id DESC LIMIT %s OFFSET %s"
         params.extend([page_size, offset])
