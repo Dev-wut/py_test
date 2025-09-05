@@ -61,28 +61,35 @@ def insert_deals(deals_data):
     _ensure_database_url()
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
         create_tables(cur)
-        # Clear existing deals while keeping merchants intact
+        # Clear existing data
+        cur.execute("TRUNCATE TABLE merchants RESTART IDENTITY CASCADE;")
         cur.execute("TRUNCATE TABLE deals RESTART IDENTITY CASCADE;")
+
+        # Insert merchants first to ensure fresh IDs
+        for deal in deals_data["products"]:
+            merchant_name = deal.get("merchant")
+            if merchant_name:
+                cur.execute(
+                    """
+                    INSERT INTO merchants (name)
+                    VALUES (%s)
+                    ON CONFLICT (LOWER(name)) DO NOTHING;
+                    """,
+                    (merchant_name,),
+                )
 
         for deal in deals_data["products"]:
             try:
                 merchant_name = deal.get("merchant")
                 if merchant_name:
                     cur.execute(
-                        """
-                        INSERT INTO merchants (name)
-                        VALUES (%s)
-                        ON CONFLICT (LOWER(name)) DO NOTHING;
-                        """,
-                        (merchant_name,),
-                    )
-
-                    cur.execute(
                         "SELECT id FROM merchants WHERE LOWER(name) = LOWER(%s);",
                         (merchant_name,),
                     )
                     merchant_id_result = cur.fetchone()
-                    merchant_id = merchant_id_result[0] if merchant_id_result else None
+                    merchant_id = (
+                        merchant_id_result[0] if merchant_id_result else None
+                    )
                 else:
                     merchant_id = None
 

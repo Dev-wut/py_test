@@ -52,6 +52,9 @@ def test_insert_deals_commits_once_and_closes_connection():
 
     mock_create_tables.assert_called_once()
     mock_cursor.execute.assert_any_call(
+        "TRUNCATE TABLE merchants RESTART IDENTITY CASCADE;"
+    )
+    mock_cursor.execute.assert_any_call(
         "TRUNCATE TABLE deals RESTART IDENTITY CASCADE;"
     )
     mock_conn.commit.assert_called_once()
