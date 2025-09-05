@@ -2,6 +2,16 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Environment Variables
+
+The frontend reads the API base URL from a `.env` file using CRA conventions. Create `frontend/.env` with:
+
+```
+REACT_APP_API_BASE_URL=http://localhost:8000
+```
+
+Adjust the value to match your backend server.
+
 ## Available Scripts
 
 In the project directory, you can run:
