@@ -168,6 +168,14 @@ def get_all_merchants():
     return merchants
 
 
+def get_merchants_last_value():
+    """Return the current value of the merchants ID sequence."""
+    _ensure_database_url()
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
+        cur.execute("SELECT last_value FROM merchants_id_seq;")
+        return cur.fetchone()[0]
+
+
 def get_deals_from_db(
     page: int = 1, page_size: int = 50, merchant: str = None, title: str = None
 ):
