@@ -43,3 +43,6 @@ backend/data/scraper_status.json
 backup/
 priceza_hot_deals_*.csv
 priceza_hot_deals_*.json
+
+backup/
+example/

@@ -228,6 +228,20 @@ def get_latest_deals():
 
 
 
+import httpx
+from fastapi.responses import StreamingResponse
+
+@app.get("/api/proxy-image")
+async def proxy_image(url: str):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url)
+            response.raise_for_status()
+            return StreamingResponse(response.iter_bytes(), media_type=response.headers.get("content-type"))
+        except httpx.HTTPStatusError as e:
+            logging.error(f"Failed to fetch image from {url}: {e}")
+            return {"message": "Failed to fetch image"}, 400
+
 @app.get("/", include_in_schema=False)
 def root():
     return {"message": "PriceZA Scraper API is running. Visit /docs for API documentation."}
