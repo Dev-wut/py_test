@@ -73,7 +73,7 @@ def insert_deals(deals_data):
                     """
                     INSERT INTO merchants (name)
                     VALUES (%s)
-                    ON CONFLICT (LOWER(name)) DO NOTHING;
+                    ON CONFLICT ON CONSTRAINT merchant_name_unique_idx DO NOTHING;
                     """,
                     (merchant_name,),
                 )
