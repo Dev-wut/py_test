@@ -62,6 +62,87 @@ def test_insert_deals_commits_once_and_closes_connection():
     mock_conn.cursor.return_value.__exit__.assert_called_once()
 
 
+def test_insert_deals_avoids_duplicate_merchants():
+    db.DATABASE_URL = "postgres://example"
+    deals_data = {
+        "products": [
+            {
+                "merchant": "Shop",
+                "title": "Item1",
+                "price": "10",
+                "original_price": "20",
+                "discount": "50%",
+                "image_url": "img1",
+                "product_url": "url1",
+                "merchant_image": "mi1",
+                "rating": "4",
+                "reviews_count": "100",
+            },
+            {
+                "merchant": "Shop",
+                "title": "Item2",
+                "price": "12",
+                "original_price": "24",
+                "discount": "50%",
+                "image_url": "img2",
+                "product_url": "url2",
+                "merchant_image": "mi2",
+                "rating": "5",
+                "reviews_count": "200",
+            },
+        ]
+    }
+
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.side_effect = [
+        (1,),
+        (
+            "Item1",
+            "10",
+            "20",
+            "50%",
+            "img1",
+            "url1",
+            1,
+            "mi1",
+            "4",
+            "100",
+        ),
+        (1,),
+        (
+            "Item2",
+            "12",
+            "24",
+            "50%",
+            "img2",
+            "url2",
+            1,
+            "mi2",
+            "5",
+            "200",
+        ),
+    ]
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+    mock_conn.__enter__.return_value = mock_conn
+
+    with patch("backend.database.psycopg2.connect", return_value=mock_conn), patch(
+        "backend.database.create_tables"
+    ):
+        db.insert_deals(deals_data)
+
+    merchant_insert_calls = [
+        c
+        for c in mock_cursor.execute.call_args_list
+        if "INSERT INTO merchants" in c.args[0]
+    ]
+    assert len(merchant_insert_calls) == 2
+    for c in merchant_insert_calls:
+        assert (
+            "ON CONFLICT ON CONSTRAINT merchant_name_unique_idx DO NOTHING" in c.args[0]
+        )
+
+
 def test_merchants_sequence_reset():
     db.DATABASE_URL = "postgres://example"
     deals_data = {
