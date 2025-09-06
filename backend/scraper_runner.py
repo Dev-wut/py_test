@@ -76,12 +76,27 @@ def scrape_and_save(allowed_merchants: Optional[List[str]] = None):
     # Ensure the data directory exists
     os.makedirs(DATA_DIR, exist_ok=True)
 
-    with open(LATEST_DEALS_FILE, "w", encoding="utf-8") as f:
-        json.dump({
-            "timestamp": datetime.now(ZoneInfo("Asia/Bangkok")).isoformat(),
-            "total_products": 0,
-            "products": []
-        }, f, ensure_ascii=False, indent=2)
+    if os.path.exists(LATEST_DEALS_FILE):
+        try:
+            with open(LATEST_DEALS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            logging.error(f"Failed to load existing {LATEST_DEALS_FILE}: {e}")
+            data = {}
+        data["products"] = []
+        data["total_products"] = 0
+        try:
+            with open(LATEST_DEALS_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logging.error(f"Failed to write {LATEST_DEALS_FILE}: {e}")
+    else:
+        with open(LATEST_DEALS_FILE, "w", encoding="utf-8") as f:
+            json.dump({
+                "timestamp": datetime.now(ZoneInfo("Asia/Bangkok")).isoformat(),
+                "total_products": 0,
+                "products": []
+            }, f, ensure_ascii=False, indent=2)
 
     config = load_scraper_config() # Load config here
     scraper = PriceZAScraper(config=config, allowed_merchants=allowed_merchants)
