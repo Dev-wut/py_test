@@ -52,7 +52,7 @@ def test_insert_deals_commits_once_and_closes_connection():
 
     mock_create_tables.assert_called_once()
     mock_cursor.execute.assert_any_call(
-        "TRUNCATE TABLE merchants RESTART IDENTITY CASCADE;"
+        "TRUNCATE TABLE merchants RESTART IDENTITY;"
     )
     mock_cursor.execute.assert_any_call(
         "TRUNCATE TABLE deals RESTART IDENTITY CASCADE;"
@@ -120,3 +120,41 @@ def test_merchants_sequence_reset():
     mock_cursor_seq.execute.assert_called_once_with(
         "SELECT last_value FROM merchants_id_seq;"
     )
+
+
+def test_get_deals_from_db_joins_merchants():
+    db.DATABASE_URL = "postgres://example"
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+    mock_conn.__enter__.return_value = mock_conn
+
+    mock_cursor.fetchone.return_value = (1,)
+    mock_cursor.fetchall.return_value = [
+        (
+            1,
+            "Item",
+            "10",
+            "20",
+            "50%",
+            "img",
+            "url",
+            1,
+            "mi",
+            "4",
+            "100",
+            None,
+            None,
+            "Shop",
+        )
+    ]
+
+    with patch("backend.database.psycopg2.connect", return_value=mock_conn):
+        result = db.get_deals_from_db()
+
+    executed_queries = [call.args[0] for call in mock_cursor.execute.call_args_list]
+    assert any(
+        "LEFT JOIN merchants m ON d.merchant_id = m.id" in query
+        for query in executed_queries
+    )
+    assert result["products"][0]["merchant"] == "Shop"
