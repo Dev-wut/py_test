@@ -46,7 +46,7 @@ def create_tables(cur=None):
             discount TEXT,
             image_url TEXT,
             product_url TEXT,
-            merchant_id INTEGER REFERENCES merchants(id),
+            merchant_id INTEGER,
             merchant_image TEXT,
             rating TEXT,
             reviews_count TEXT,
@@ -62,7 +62,7 @@ def insert_deals(deals_data):
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
         create_tables(cur)
         # Clear existing data
-        cur.execute("TRUNCATE TABLE merchants RESTART IDENTITY CASCADE;")
+        cur.execute("TRUNCATE TABLE merchants RESTART IDENTITY;")
         cur.execute("TRUNCATE TABLE deals RESTART IDENTITY CASCADE;")
 
         # Insert merchants first to ensure fresh IDs
