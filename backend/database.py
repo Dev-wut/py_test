@@ -1,8 +1,44 @@
 import logging
 import os
 import psycopg2
+from psycopg2 import sql, extensions
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
+
+def _ensure_database_exists():
+    """Ensure that the target database exists.
+
+    Connects to the default ``postgres`` database on the configured server and
+    creates the target database if it is missing. The user specified in
+    ``DATABASE_URL`` must have sufficient privileges to run ``CREATE DATABASE``.
+    """
+
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL environment variable is not set")
+
+    params = extensions.parse_dsn(DATABASE_URL)
+    dbname = params.pop("dbname", None)
+    if not dbname:
+        raise RuntimeError("DATABASE_URL must include a database name")
+
+    admin_dsn = extensions.make_dsn(dbname="postgres", **params)
+
+    try:
+        with psycopg2.connect(admin_dsn) as conn:
+            conn.autocommit = True
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT 1 FROM pg_database WHERE datname = %s;", (dbname,)
+                )
+                exists = cur.fetchone()
+                if not exists:
+                    cur.execute(
+                        sql.SQL("CREATE DATABASE {}" ).format(sql.Identifier(dbname))
+                    )
+    except psycopg2.Error as e:
+        logging.error(f"Error ensuring database exists: {e}")
+        raise
 
 
 def _ensure_database_url():
@@ -18,6 +54,7 @@ def create_tables(cur=None):
     to simply call ``create_tables()`` without managing connections.
     """
 
+    _ensure_database_exists()
     _ensure_database_url()
 
     if cur is None:
@@ -58,6 +95,7 @@ def create_tables(cur=None):
 
 
 def insert_deals(deals_data):
+    _ensure_database_exists()
     _ensure_database_url()
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
         create_tables(cur)
@@ -161,6 +199,7 @@ def insert_deals(deals_data):
 
 
 def get_all_merchants():
+    _ensure_database_exists()
     _ensure_database_url()
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
         cur.execute("SELECT name FROM merchants ORDER BY name")
@@ -170,6 +209,7 @@ def get_all_merchants():
 
 def get_merchants_last_value():
     """Return the current value of the merchants ID sequence."""
+    _ensure_database_exists()
     _ensure_database_url()
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
         cur.execute("SELECT last_value FROM merchants_id_seq;")
@@ -179,6 +219,7 @@ def get_merchants_last_value():
 def get_deals_from_db(
     page: int = 1, page_size: int = 50, merchant: str = None, title: str = None
 ):
+    _ensure_database_exists()
     _ensure_database_url()
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
         offset = (page - 1) * page_size

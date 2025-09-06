@@ -47,7 +47,8 @@ def test_insert_deals_commits_once_and_closes_connection():
     mock_conn.__exit__.side_effect = exit_func
 
     with patch("backend.database.psycopg2.connect", return_value=mock_conn), \
-         patch("backend.database.create_tables") as mock_create_tables:
+         patch("backend.database.create_tables") as mock_create_tables, \
+         patch("backend.database._ensure_database_exists"):
         db.insert_deals(deals_data)
 
     mock_create_tables.assert_called_once()
@@ -128,7 +129,7 @@ def test_insert_deals_avoids_duplicate_merchants():
 
     with patch("backend.database.psycopg2.connect", return_value=mock_conn), patch(
         "backend.database.create_tables"
-    ):
+    ), patch("backend.database._ensure_database_exists"):
         db.insert_deals(deals_data)
 
     merchant_insert_calls = [
@@ -193,7 +194,9 @@ def test_merchants_sequence_reset():
     mock_conn_seq.cursor.return_value.__enter__.return_value = mock_cursor_seq
     mock_conn_seq.__enter__.return_value = mock_conn_seq
 
-    with patch("backend.database.psycopg2.connect", side_effect=[mock_conn_insert, mock_conn_seq]):
+    with patch(
+        "backend.database.psycopg2.connect", side_effect=[mock_conn_insert, mock_conn_seq]
+    ), patch("backend.database._ensure_database_exists"):
         db.insert_deals(deals_data)
         last_value = db.get_merchants_last_value()
 
@@ -230,7 +233,9 @@ def test_get_deals_from_db_joins_merchants():
         )
     ]
 
-    with patch("backend.database.psycopg2.connect", return_value=mock_conn):
+    with patch("backend.database.psycopg2.connect", return_value=mock_conn), patch(
+        "backend.database._ensure_database_exists"
+    ):
         result = db.get_deals_from_db()
 
     executed_queries = [call.args[0] for call in mock_cursor.execute.call_args_list]
