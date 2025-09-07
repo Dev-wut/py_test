@@ -3,6 +3,7 @@ import 'antd/dist/reset.css';
 import { Routes, Route } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import ScraperCriteria from './ScraperCriteria';
+import OwnerProduct from './pages/OwnerProduct';
 import {
   Layout,
   Row,
@@ -153,6 +154,7 @@ const App = () => {
               totalProducts={totalProducts}
               loading={loading}
               onRefresh={() => fetchDeals(1, selectedMerchant, searchTitle)}
+              pageType="main"
             />
             <Content className={styles.content}>
               {lastUpdated && (
@@ -220,6 +222,7 @@ const App = () => {
         }
       />
       <Route path="/scraper-criteria" element={<ScraperCriteria />} />
+      <Route path="/owner-product" element={<OwnerProduct />} />
     </Routes>
   );
 };

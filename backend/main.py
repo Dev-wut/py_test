@@ -10,10 +10,30 @@ except ImportError:  # pragma: no cover
     from config import DEFAULT_SCRAPER_CONFIG
 try:
     from .utils.logging import setup_logging
-    from .database import get_deals_from_db, get_all_merchants, create_tables, update_deal
+    from .database import (
+        get_deals_from_db,
+        get_all_merchants,
+        create_tables,
+        update_deal,
+        create_owner_tables,
+        insert_owner_deal,
+        get_owner_deals,
+        update_owner_deal,
+        delete_owner_deal,
+    )
 except ImportError:  # pragma: no cover
     from utils.logging import setup_logging
-    from database import get_deals_from_db, get_all_merchants, create_tables, update_deal
+    from database import (
+        get_deals_from_db,
+        get_all_merchants,
+        create_tables,
+        update_deal,
+        create_owner_tables,
+        insert_owner_deal,
+        get_owner_deals,
+        update_owner_deal,
+        delete_owner_deal,
+    )
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,6 +59,7 @@ app = FastAPI(
 @app.on_event("startup")
 def startup_event():
     create_tables()
+    create_owner_tables()
 
 # --- CORS Middleware ---
 # Allow requests based on the ALLOWED_ORIGINS environment variable.
@@ -142,6 +163,30 @@ class DealUpdate(BaseModel):
     price: Optional[str] = None
     original_price: Optional[str] = None
     discount: Optional[str] = None
+
+class OwnerDealCreate(BaseModel):
+    title: str
+    price: str
+    original_price: Optional[str] = ""
+    discount: Optional[str] = ""
+    image_url: Optional[str] = ""
+    product_url: Optional[str] = ""
+    merchant: Optional[str] = ""
+    merchant_image: Optional[str] = ""
+    rating: Optional[str] = ""
+    reviews_count: Optional[str] = ""
+
+class OwnerDealUpdate(BaseModel):
+    title: Optional[str] = None
+    price: Optional[str] = None
+    original_price: Optional[str] = None
+    discount: Optional[str] = None
+    image_url: Optional[str] = None
+    product_url: Optional[str] = None
+    merchant: Optional[str] = None
+    merchant_image: Optional[str] = None
+    rating: Optional[str] = None
+    reviews_count: Optional[str] = None
 
 
 # --- API Endpoints ---
@@ -252,6 +297,48 @@ def update_deal_api(deal_id: int, deal: DealUpdate):
     except Exception as e:
         logging.error(f"Could not update deal {deal_id}: {e}")
         return {"message": f"Failed to update deal: {e}"}, 500
+
+@app.get(
+    "/api/owner_deals",
+    response_model=ScrapeResponse,
+    summary="Get Owner-Created Deals",
+)
+def get_owner_deals_api(page: int = 1, page_size: int = 50):
+    try:
+        deals_data = get_owner_deals(page, page_size)
+        return deals_data
+    except Exception as e:
+        logging.error(f"Could not fetch owner deals from database: {e}")
+        return {"total_products": 0, "products": [], "page": page, "page_size": page_size}
+
+@app.post("/api/owner_deals", summary="Create an Owner Deal")
+def create_owner_deal_api(deal: OwnerDealCreate):
+    try:
+        deal_id = insert_owner_deal(deal.dict())
+        return {"message": "Deal created successfully.", "deal_id": deal_id}
+    except Exception as e:
+        logging.error(f"Could not create owner deal: {e}")
+        return {"message": f"Failed to create deal: {e}"}, 500
+
+@app.put("/api/owner_deals/{deal_id}", summary="Update an Owner Deal")
+def update_owner_deal_api(deal_id: int, deal: OwnerDealUpdate):
+    try:
+        update_owner_deal(deal_id, deal.dict(exclude_unset=True))
+        return {"message": "Owner deal updated successfully."}
+    except Exception as e:
+        logging.error(f"Could not update owner deal {deal_id}: {e}")
+        return {"message": f"Failed to update owner deal: {e}"}, 500
+
+@app.delete("/api/owner_deals/{deal_id}", summary="Delete an Owner Deal")
+def delete_owner_deal_api(deal_id: int):
+    logging.info(f"Attempting to delete owner deal with id: {deal_id}")
+    try:
+        delete_owner_deal(deal_id)
+        logging.info(f"Successfully deleted owner deal with id: {deal_id}")
+        return {"message": "Owner deal deleted successfully."}
+    except Exception as e:
+        logging.error(f"Could not delete owner deal {deal_id}: {e}")
+        return {"message": f"Failed to delete owner deal: {e}"}, 500
 
 @app.get("/api/merchants", response_model=List[str], summary="Get All Merchants")
 def get_all_merchants_api():

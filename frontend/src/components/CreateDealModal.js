@@ -1,14 +1,8 @@
-import React, { useEffect } from 'react';
-import { Modal, Form, Input, Button } from 'antd';
+import React from 'react';
+import { Modal, Form, Input, Button, message } from 'antd';
 
-const EditDealModal = ({ visible, onCancel, onFinish, onDelete, initialValues }) => {
+const CreateDealModal = ({ visible, onCancel, onFinish }) => {
   const [form] = Form.useForm();
-
-  useEffect(() => {
-    if (initialValues) {
-      form.setFieldsValue(initialValues);
-    }
-  }, [initialValues, form]);
 
   const handleOk = () => {
     form
@@ -20,10 +14,6 @@ const EditDealModal = ({ visible, onCancel, onFinish, onDelete, initialValues })
       .catch(info => {
         console.log('Validate Failed:', info);
       });
-  };
-
-  const handleDelete = () => {
-    onDelete();
   };
 
   const handleValuesChange = (changedValues, allValues) => {
@@ -43,28 +33,16 @@ const EditDealModal = ({ visible, onCancel, onFinish, onDelete, initialValues })
   return (
     <Modal
       visible={visible}
-      title="Edit Deal"
-      okText="Save"
+      title="Create a New Deal"
+      okText="Create"
       cancelText="Cancel"
       onCancel={onCancel}
       onOk={handleOk}
-      footer={[
-        <Button key="delete" danger onClick={handleDelete}>
-          Delete
-        </Button>,
-        <Button key="back" onClick={onCancel}>
-          Cancel
-        </Button>,
-        <Button key="submit" type="primary" onClick={handleOk}>
-          Save
-        </Button>,
-      ]}
     >
       <Form
         form={form}
         layout="vertical"
         name="form_in_modal"
-        initialValues={initialValues}
         onValuesChange={handleValuesChange}
       >
         <Form.Item
@@ -106,4 +84,4 @@ const EditDealModal = ({ visible, onCancel, onFinish, onDelete, initialValues })
   );
 };
 
-export default EditDealModal;
+export default CreateDealModal;

@@ -305,3 +305,171 @@ def update_deal(deal_id: int, deal_data: dict):
         )
         
         cur.execute(query, tuple(values))
+
+def create_owner_tables(cur=None):
+    """Create owner-specific database tables if they do not exist."""
+    _ensure_database_exists()
+    _ensure_database_url()
+
+    if cur is None:
+        with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
+            create_owner_tables(cur)
+        return
+
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS owner_merchants (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL
+        );
+        """
+    )
+    cur.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS owner_merchant_name_unique_idx ON owner_merchants (LOWER(name));"
+    )
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS owner_deals (
+            id SERIAL PRIMARY KEY,
+            title TEXT,
+            price TEXT,
+            original_price TEXT,
+            discount TEXT,
+            image_url TEXT,
+            product_url TEXT,
+            merchant_id INTEGER,
+            merchant_image TEXT,
+            rating TEXT,
+            reviews_count TEXT,
+            created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok'),
+            updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok')
+        );
+        """
+    )
+
+def insert_owner_deal(deal_data):
+    _ensure_database_url()
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
+        create_owner_tables(cur)
+        
+        merchant_name = deal_data.get("merchant")
+        merchant_id = None
+        if merchant_name:
+            # Insert merchant and get id
+            cur.execute(
+                """
+                INSERT INTO owner_merchants (name)
+                VALUES (%s)
+                ON CONFLICT (LOWER(name)) DO UPDATE SET name = EXCLUDED.name
+                RETURNING id;
+                """,
+                (merchant_name,),
+            )
+            merchant_id_result = cur.fetchone()
+            if merchant_id_result:
+                merchant_id = merchant_id_result[0]
+
+        # Insert deal
+        cur.execute(
+            """
+            INSERT INTO owner_deals (
+                title, price, original_price, discount, image_url,
+                product_url, merchant_id, merchant_image, rating, reviews_count
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id;
+            """,
+            (
+                deal_data.get("title"),
+                deal_data.get("price"),
+                deal_data.get("original_price"),
+                deal_data.get("discount"),
+                deal_data.get("image_url"),
+                deal_data.get("product_url"),
+                merchant_id,
+                deal_data.get("merchant_image"),
+                deal_data.get("rating"),
+                deal_data.get("reviews_count"),
+            ),
+        )
+        deal_id = cur.fetchone()[0]
+        conn.commit()
+        return deal_id
+
+def get_owner_deals(page: int = 1, page_size: int = 50):
+    _ensure_database_url()
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
+        offset = (page - 1) * page_size
+
+        count_query = "SELECT COUNT(*) FROM owner_deals"
+        cur.execute(count_query)
+        total_products = cur.fetchone()[0]
+
+        select_query = """
+            SELECT d.*, COALESCE(m.name, '') AS merchant
+            FROM owner_deals d
+            LEFT JOIN owner_merchants m ON d.merchant_id = m.id
+            ORDER BY d.id DESC
+            LIMIT %s OFFSET %s
+        """
+        cur.execute(select_query, (page_size, offset))
+        deals = cur.fetchall()
+
+    columns = [
+        "id", "title", "price", "original_price", "discount", "image_url",
+        "product_url", "merchant_id", "merchant_image", "rating",
+        "reviews_count", "created_at", "updated_at", "merchant"
+    ]
+
+    deals_list = [dict(zip(columns, deal)) for deal in deals]
+    for deal in deals_list:
+        deal["merchant"] = str(deal.get("merchant") or "")
+
+    return {
+        "total_products": total_products,
+        "products": deals_list,
+        "page": page,
+        "page_size": page_size,
+    }
+
+def update_owner_deal(deal_id: int, deal_data: dict):
+    _ensure_database_url()
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
+        # Handle merchant update
+        merchant_name = deal_data.pop("merchant", None)
+        if merchant_name:
+            cur.execute(
+                """
+                INSERT INTO owner_merchants (name)
+                VALUES (%s)
+                ON CONFLICT (LOWER(name)) DO UPDATE SET name = EXCLUDED.name
+                RETURNING id;
+                """,
+                (merchant_name,),
+            )
+            merchant_id = cur.fetchone()[0]
+            deal_data["merchant_id"] = merchant_id
+
+        fields = []
+        values = []
+        for key, value in deal_data.items():
+            fields.append(sql.Identifier(key))
+            values.append(value)
+        
+        values.append(deal_id)
+
+        query = sql.SQL("UPDATE owner_deals SET ({}) = ({}) WHERE id = %s").format(
+            sql.SQL(', ').join(fields),
+            sql.SQL(', ').join(sql.Placeholder() * len(fields))
+        )
+        
+        cur.execute(query, tuple(values))
+        conn.commit()
+
+def delete_owner_deal(deal_id: int):
+    logging.info(f"DATABASE: Deleting owner deal with id: {deal_id}")
+    _ensure_database_url()
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
+        cur.execute("DELETE FROM owner_deals WHERE id = %s", (deal_id,))
+        conn.commit()
+    logging.info(f"DATABASE: Successfully deleted owner deal with id: {deal_id}")
