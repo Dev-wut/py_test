@@ -287,3 +287,21 @@ def get_deals_from_db(
         "page": page,
         "page_size": page_size,
     }
+
+def update_deal(deal_id: int, deal_data: dict):
+    _ensure_database_url()
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
+        fields = []
+        values = []
+        for key, value in deal_data.items():
+            fields.append(sql.Identifier(key))
+            values.append(value)
+        
+        values.append(deal_id)
+
+        query = sql.SQL("UPDATE deals SET ({}) = ({}) WHERE id = %s").format(
+            sql.SQL(', ').join(fields),
+            sql.SQL(', ').join(sql.Placeholder() * len(fields))
+        )
+        
+        cur.execute(query, tuple(values))

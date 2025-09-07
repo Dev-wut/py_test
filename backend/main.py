@@ -10,10 +10,10 @@ except ImportError:  # pragma: no cover
     from config import DEFAULT_SCRAPER_CONFIG
 try:
     from .utils.logging import setup_logging
-    from .database import get_deals_from_db, get_all_merchants, create_tables
+    from .database import get_deals_from_db, get_all_merchants, create_tables, update_deal
 except ImportError:  # pragma: no cover
     from utils.logging import setup_logging
-    from database import get_deals_from_db, get_all_merchants, create_tables
+    from database import get_deals_from_db, get_all_merchants, create_tables, update_deal
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -117,6 +117,7 @@ class ScraperStatus(BaseModel):
 
 class Deal(BaseModel):
     """Defines the structure of a single deal for the API response."""
+    id: int
     title: str
     price: str
     original_price: Optional[str] = ""
@@ -135,6 +136,12 @@ class ScrapeResponse(BaseModel):
     products: List[Deal]
     page: int
     page_size: int
+
+class DealUpdate(BaseModel):
+    title: Optional[str] = None
+    price: Optional[str] = None
+    original_price: Optional[str] = None
+    discount: Optional[str] = None
 
 
 # --- API Endpoints ---
@@ -233,6 +240,18 @@ def get_latest_deals(
     except Exception as e:
         logging.error(f"Could not fetch deals from database: {e}")
         return {"total_products": 0, "products": [], "page": page, "page_size": page_size}
+
+@app.put("/api/deals/{deal_id}", summary="Update a Deal")
+def update_deal_api(deal_id: int, deal: DealUpdate):
+    """
+    Updates a deal in the database.
+    """
+    try:
+        update_deal(deal_id, deal.dict(exclude_unset=True))
+        return {"message": "Deal updated successfully."}
+    except Exception as e:
+        logging.error(f"Could not update deal {deal_id}: {e}")
+        return {"message": f"Failed to update deal: {e}"}, 500
 
 @app.get("/api/merchants", response_model=List[str], summary="Get All Merchants")
 def get_all_merchants_api():
