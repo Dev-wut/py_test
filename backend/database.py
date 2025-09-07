@@ -254,7 +254,7 @@ def get_deals_from_db(
             else:
                 select_query += " WHERE LOWER(d.title) LIKE LOWER(%s)"
 
-        select_query += " ORDER BY d.id DESC LIMIT %s OFFSET %s"
+        select_query += " ORDER BY d.id ASC LIMIT %s OFFSET %s"
         params.extend([page_size, offset])
 
         cur.execute(select_query, tuple(params))
